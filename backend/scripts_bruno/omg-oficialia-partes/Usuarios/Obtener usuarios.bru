@@ -1,0 +1,15 @@
+meta {
+  name: Obtener usuarios
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{local}}/usuarios/obtener_usuarios
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

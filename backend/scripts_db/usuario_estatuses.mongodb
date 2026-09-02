@@ -1,0 +1,14 @@
+use("capacitacion_db");
+
+db.usuario_estatuses.insertMany([
+    { 
+        clave_estatus: 1,
+        nombre_estatus: "Habilitado",
+        descripcion_estatus: "Usuario activo en el sistema."
+     },
+    { 
+        clave_estatus: 2,
+        nombre_estatus: "Deshabilitado",
+        descripcion_estatus: "Usuario sin acceso al sistema."
+     }
+]);

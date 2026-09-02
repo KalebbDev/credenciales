@@ -1,0 +1,9 @@
+use('capacitacion_db')
+
+db.codigos_postales.drop()
+db.dependencias.drop()
+db.roles.drop()
+db.usuarios.drop()
+db.usuario_estatuses.drop()
+
+

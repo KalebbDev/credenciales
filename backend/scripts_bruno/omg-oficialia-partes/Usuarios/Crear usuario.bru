@@ -1,0 +1,38 @@
+meta {
+  name: Crear usuario
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{local}}/usuarios/crear_usuario
+  body: json
+  auth: inherit
+}
+
+body:json {
+      {
+          "nombre": "Bruno",
+          "curp": "EEOS250219HTLVPOS3",
+          "telefono": "2462003212",
+          "correo": "usuario_bruno@oficialiapt.com",
+          "contrasena": "usuario12345",
+          "clave_dependencia":  2931,
+          "clave_rol": 35 //Administrador
+      }
+  
+      // {
+      //     "nombre": "Bruno",
+      //     "curp": "EEOS250219HTLVPOS3",
+      //     "telefono": "2462003212",
+      //     "correo": "usuario_bruno@oficialiapt.com",
+      //     "contrasena": "usuario12345",
+      //     "clave_dependencia":  2931,
+      //     "clave_rol": 48 //Enlace
+      // }
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,48 @@
+use("capacitacion_db");
+
+db.usuarios.insertMany([
+   {
+    "token": "",
+    "clave_estatus": 1,
+    "nombre_estatus": "Habilitado",
+    "correo": "superadmin@oficialiapt.com",
+    "contrasena": "$2b$10$9b8q6lHzU7Qnp/cFpixDWeOyVxxHmuWq5d06N1C78WFqeK2y/svAC",
+    "nombre": "Superadmin",
+    "curp": "EEOS250219HTLVMPA1",
+    "clave_dependencia":  2931,
+    "clave_rol": 217,
+   },
+   {
+    "token": "",
+    "clave_estatus": 1,
+    "nombre_estatus": "Habilitado",
+    "correo": "oficialiapartes@oficialiapt.com",
+    "contrasena": "$2b$10$9b8q6lHzU7Qnp/cFpixDWeOyVxxHmuWq5d06N1C78WFqeK2y/svAC",
+    "nombre": "Admin",
+    "curp": "EEOA250219HTLVMDA5",
+    "clave_dependencia":  2931,
+    "clave_rol": 325,
+   },
+   {
+    "token": "",
+    "clave_estatus": 1,
+    "nombre_estatus": "Habilitado",
+    "correo": "internodependencia@oficialiapt.com",
+    "contrasena": "$2b$10$9b8q6lHzU7Qnp/cFpixDWeOyVxxHmuWq5d06N1C78WFqeK2y/svAC",
+    "nombre": "Oficialia de partes OMG",
+    "curp": "EAOA250219HTLVMDA5",
+    "clave_dependencia": 2901,
+    "clave_rol": 488,
+  },
+  {
+    "token": "",
+    "clave_estatus": 1,
+    "nombre_estatus": "Habilitado",
+    "correo": "casa@oficialiapt.com",
+    "contrasena": "$2b$10$9b8q6lHzU7Qnp/cFpixDWeOyVxxHmuWq5d06N1C78WFqeK2y/svAC",
+    "nombre": "Oficialia de partes Casa",
+    "curp": "EAOA250219HTLVMDA5",
+    "clave_dependencia": 2959,
+    "clave_rol": 325,
+  },
+]);

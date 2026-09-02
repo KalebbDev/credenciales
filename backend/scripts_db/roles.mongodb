@@ -1,0 +1,8 @@
+use("capacitacion_db");
+
+db.roles.insertMany([
+    { clave_rol: 217, nombre_rol: "Superadministrador" },
+    { clave_rol: 325, nombre_rol: "Oficialia de partes" },
+    { clave_rol: 488, nombre_rol: "Interno dependencia" }
+]);
+

@@ -1,0 +1,60 @@
+name: 'capacitacion'
+services:
+  app:
+    container_name: node-express
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    restart: always
+    environment:
+      EMISOR_JWT: 'oficialia-partes-api'
+      MONGO_URL: 'mongodb://capacitacion_user:LKahcnfh13AjhdghaDha3@db/capacitacion_db?authSource=admin'
+      JWT_KEY: 'L1p230d8gtG8and-a.qa2Ai81h3u8abn1'
+      SECRET_COOKIE: 'Los91udhvV9156281A_ah135aFbhnaD'
+      KAFKA_SERVER: '10.50.230.81:9092'
+    depends_on:
+      - redis
+      - db
+    volumes:
+      - ./app/logs:/usr/src/app/logs
+      - ./app/:/usr/src/app
+      - ./tests/:/usr/src/tests
+      - ./package.json:/usr/src/package.json
+      - ./package-lock.json:/usr/src/package-lock.json
+      - /usr/src/node_modules
+    ports:
+      - '3020:3000'
+    networks:
+      - network-capacitacion
+
+  redis:
+    container_name: redis
+    image: redis:7.2
+    restart: always
+    volumes:
+      - redis:/data
+    command: ['redis-server', '--appendonly', 'yes']
+    networks:
+      - network-capacitacion
+
+  db:
+    container_name: mongodb
+    image: mongo:7.0
+    restart: always
+    ports:
+      - '27017:27017'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=capacitacion_user
+      - MONGO_INITDB_ROOT_PASSWORD=LKahcnfh13AjhdghaDha3
+      - MONGO_INITDB_DATABASE=capacitacion_db
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - network-capacitacion
+
+networks:
+  network-capacitacion:
+
+volumes:
+  mongodb:
+  redis:
