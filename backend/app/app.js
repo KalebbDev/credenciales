@@ -4,20 +4,20 @@ const cors = require('cors');
 const session = require('express-session');
 const { redisClient } = require('./config/redis');
 const { RedisStore } = require('connect-redis');
-// Importa tus rutas de usuarios
-const usuarioRoutes = require('./routes/usuarioRouters');
+
+const usuarioRoutes = require('./routes/usuarioRouters');   // login del sistema
+const ciudadanoRoutes = require("./routes/ciudadanoRouters"); // solicitantes
+const licenciaRoutes = require("./routes/licenciaRouters");   // licencias
+
 const logMiddleware = require('./middlewares/logMiddleware');
 const errorHandler = require('./config/errorHandler');
 const dominiosPermitidos = require('./config/domains');
-const routes = require('./routes');
 const conectarMongoDB = require('./config/mongodb');
 const { swaggerUi, swaggerSpec } = require('./config/swagger');
 
-
-
 console.log('MONGO_URL:', process.env.MONGO_URL);
 
-const app = express();
+const app = express();   // ⚡️ primero declaramos app
 
 // Conexión a MongoDB
 conectarMongoDB()
@@ -90,6 +90,8 @@ app.get('/', (req, res) => {
 // Prefijo de API
 const prefixInterna = `/api/v1/`;
 app.use(`${prefixInterna}usuarios`, usuarioRoutes);
+app.use(`${prefixInterna}ciudadanos`, ciudadanoRoutes);
+app.use(`${prefixInterna}licencias`, licenciaRoutes);
 
 // Manejo de errores
 app.use((req, res) => {
@@ -98,5 +100,4 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // 🚨 IMPORTANTE: NO usar app.listen aquí
-// Solo exportamos la instancia de Express
 module.exports = app;
