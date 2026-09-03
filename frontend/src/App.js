@@ -26,30 +26,9 @@ export default App;*/
 
 
 import React, { useState } from "react";
-import UserList from "./UserList";
-import UserForm from "./UserForm";
-import UserEdit from "./UserEdit";
-
+import Login from "./components/Login";
 function App() {
-  const [refresh, setRefresh] = useState(false);
-  const [usuarioEdit, setUsuarioEdit] = useState(null);
-
-  const handleUserAdded = () => setRefresh(!refresh);
-  const handleUserUpdated = () => {
-    setUsuarioEdit(null);
-    setRefresh(!refresh);
-  };
-
-  return (
-    <div>
-      <h1>Gestión de Usuarios</h1>
-      <UserForm onUserAdded={handleUserAdded} />
-      {usuarioEdit && (
-        <UserEdit usuario={usuarioEdit} onUpdated={handleUserUpdated} />
-      )}
-      <UserList key={refresh} setUsuarioEdit={setUsuarioEdit} />
-    </div>
-  );
+  return <Login />;
 }
 
 export default App;
