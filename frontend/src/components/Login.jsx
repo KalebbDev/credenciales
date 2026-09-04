@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 //Hola Belem
 //hola kalep
-const Login = () => {
+
+const Login = ({ onLogin }) => {
   const [correo, setCorreo] = useState("");
   const [contrasena, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -25,9 +26,8 @@ const Login = () => {
         throw new Error(data.message || "Error al iniciar sesión");
       }
 
-      localStorage.setItem("token", data.token);
-      alert("✅ Inicio de sesión exitoso");
-      window.location.href = "/dashboard"; // Redirige a tu vista principal
+      localStorage.setItem("token", data.data.token);
+      onLogin(data.data.usuario); // ✅ ahora sí funciona
     } catch (err) {
       setError(err.message);
     } finally {

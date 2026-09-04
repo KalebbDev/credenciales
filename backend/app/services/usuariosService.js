@@ -25,10 +25,16 @@ exports.loginUsuario = async (correo, contrasena) => {
   }
 
   const token = jwt.sign(
-    { id: usuario._id, correo: usuario.correo, rol: usuario.rol },
+    {
+      id: usuario._id,
+      nombre: usuario.nombre,   // 
+      correo: usuario.correo,
+      rol: usuario.rol          // ADMIN o ENCARGADO
+    },
     process.env.JWT_SECRET || 'secret_key',
     { expiresIn: '1h' }
-    );
+  );
+
 
     return {
         token,

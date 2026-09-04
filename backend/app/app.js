@@ -79,7 +79,7 @@ if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'stg') {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
 
-// Archivos estáticos
+// Archivos estáticos (para servir fotos y firmas)
 app.use('/files', express.static(path.join(__dirname, 'uploads')));
 
 // Ruta base

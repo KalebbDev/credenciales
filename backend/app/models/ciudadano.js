@@ -21,12 +21,16 @@ const CiudadanoSchema = new mongoose.Schema({
       expedida: Date,
       vencimiento: Date,
       vigencia: String,
-      tipo: String,        // Ej: "A", "B", "C"
+      tipo: String,
       matricula: String,
-      nombreTipo: String,  // Ej: "Motociclista", "Automovilista"
+      nombreTipo: String,
       folio: String
     }
-  ]
+  ],
+  registradoPor: {
+    nombre: String,
+    rol: { type: String, enum: ["ADMIN", "ENCARGADO"] }
+  }
 });
 
 module.exports = mongoose.model("Ciudadano", CiudadanoSchema);
