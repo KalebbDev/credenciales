@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import DatosPersonalesForm from "./DatosPersonalesForm";
 import LicenciaForm from "./LicenciaForm";
 import UsuariosPage from "./UsuariosPage";
+import RegistrosPage from "./RegistrosPage";
+
 
 
 function Dashboard({ usuario, onLogout }) {
@@ -60,10 +62,7 @@ function Dashboard({ usuario, onLogout }) {
         
 
         {view === "registros" && (
-          <>
-            <h2>Registros de Ciudadanos</h2>
-            <p>👉 Aquí después mostraremos la tabla de ciudadanos.</p>
-          </>
+          <RegistrosPage />
         )}
       </main>
     </div>
