@@ -17,8 +17,8 @@ exports.crearCiudadano = async (req, res) => {
         alergias: datos.alergias,
         nacimiento: datos.nacimiento,
         telefono: datos.telefono,
-        fotografia: files?.fotografia ? files.fotografia[0].filename : null,
-        firma: files?.firma ? files.firma[0].filename : null
+        fotografia: files?.fotografia ? `/uploads/${files.fotografia[0].filename}` : null,
+        firma: files?.firma ? `/uploads/${files.firma[0].filename}` : null
       },
       registradoPor: {
         nombre: req.usuario.nombre,
@@ -29,6 +29,18 @@ exports.crearCiudadano = async (req, res) => {
     res.json({ message: "Ciudadano registrado correctamente", ciudadano });
   } catch (err) {
     res.status(500).json({ message: "Error al registrar ciudadano", error: err.message });
+  }
+};
+
+exports.buscarPorId = async (req, res) => {
+  try {
+    const ciudadano = await ciudadanoService.buscarPorId(req.params.id);
+    if (!ciudadano) {
+      return res.status(404).json({ message: "Ciudadano no encontrado" });
+    }
+    res.json(ciudadano);
+  } catch (err) {
+    res.status(500).json({ message: "Error al buscar ciudadano", error: err.message });
   }
 };
 

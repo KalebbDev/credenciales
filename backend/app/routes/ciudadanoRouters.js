@@ -3,10 +3,9 @@ const router = express.Router();
 const ciudadanoController = require("../controllers/ciudadanoController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const roleMiddleware = require("../middlewares/roleMiddleware");
-const multer = require("multer");
 
-// Configuración de multer para guardar archivos en /uploads
-const upload = multer({ dest: "uploads/" });
+
+const upload = require("../config/upload");
 
 // Registrar ciudadano (solo ADMIN o ENCARGADO)
 router.post(
@@ -19,6 +18,10 @@ router.post(
   ]),
   ciudadanoController.crearCiudadano
 );
+
+
+// Buscar ciudadano por ID
+router.get("/:id", ciudadanoController.buscarPorId);
 
 // Buscar ciudadano por CURP
 router.get(

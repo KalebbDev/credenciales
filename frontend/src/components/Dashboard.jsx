@@ -3,13 +3,13 @@ import DatosPersonalesForm from "./DatosPersonalesForm";
 import LicenciaForm from "./LicenciaForm";
 import UsuariosPage from "./UsuariosPage";
 import RegistrosPage from "./RegistrosPage";
-
-
+import LicenciaPage from "./LicenciaPage";
 
 function Dashboard({ usuario, onLogout }) {
-  const [view, setView] = useState("ciudadano"); // 👈 vista inicial: registro ciudadano
+  const [view, setView] = useState("ciudadano"); 
   const [ciudadanoId, setCiudadanoId] = useState(null);
   const [menuOpen, setMenuOpen] = useState(true);
+  const [showLicencia, setShowLicencia] = useState(false);
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#f9fafb" }}>
@@ -17,7 +17,6 @@ function Dashboard({ usuario, onLogout }) {
       {menuOpen && (
         <aside style={{ width: "220px", background: "#1e293b", color: "#fff", padding: "20px" }}>
           <h3>Menú</h3>
-          {/* Solo ADMIN ve Usuarios */}
           {usuario.rol === "ADMIN" && (
             <button style={styles.menuButton} onClick={() => setView("usuarios")}>
               Usuarios
@@ -43,24 +42,18 @@ function Dashboard({ usuario, onLogout }) {
 
         {view === "ciudadano" && (
           !ciudadanoId ? (
-            <>
-              <h2>Registro de Ciudadano</h2>
-              <DatosPersonalesForm onSaved={setCiudadanoId} />
-            </>
+            <DatosPersonalesForm onSaved={setCiudadanoId} />
+          ) : showLicencia ? (
+            <LicenciaPage ciudadanoId={ciudadanoId} />
           ) : (
-            <>
-              <h2>Formulario de Licencia</h2>
-              <LicenciaForm ciudadanoId={ciudadanoId} />
-            </>
+            <LicenciaForm ciudadanoId={ciudadanoId} setShowLicencia={setShowLicencia} />
           )
         )}
 
         {view === "usuarios" && usuario.rol === "ADMIN" && (
           <UsuariosPage />
         )}
-
         
-
         {view === "registros" && (
           <RegistrosPage />
         )}

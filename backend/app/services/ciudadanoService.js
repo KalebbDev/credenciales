@@ -1,5 +1,11 @@
 const Ciudadano = require("../models/ciudadano");
 
+
+exports.buscarPorId = async (id) => {
+  return await Ciudadano.findById(id);
+};
+
+
 exports.crear = async (datos) => {
   const ciudadano = new Ciudadano(datos);
   await ciudadano.save();

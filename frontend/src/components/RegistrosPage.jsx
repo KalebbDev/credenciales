@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
+import LicenciaForm from "./LicenciaForm";
+import LicenciaPage from "./LicenciaPage";
+import DatosPersonalesForm from "./DatosPersonalesForm";
 
 function RegistrosPage() {
   const [ciudadanos, setCiudadanos] = useState([]);
   const [search, setSearch] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState(""); // "licencia" | "ver" | "editarCiudadano" | "previewLicencia"
+  const [selectedCiudadano, setSelectedCiudadano] = useState(null);
+  const [selectedLicencia, setSelectedLicencia] = useState(null);
 
-  // Cargar ciudadanos al montar la página
+  // Cargar ciudadanos
   useEffect(() => {
     const fetchCiudadanos = async () => {
       const token = localStorage.getItem("token");
@@ -21,11 +28,30 @@ function RegistrosPage() {
     fetchCiudadanos();
   }, []);
 
-  // Función para mostrar estado de licencias
-  const estadoLicencias = (licencias) => {
-    if (!licencias || licencias.length === 0) return "Sin licencia";
-    if (licencias.length === 1) return "1 licencia";
-    return `${licencias.length} licencias`;
+  // Acciones
+  const editarCiudadano = (ciudadano) => {
+    setSelectedCiudadano(ciudadano);
+    setModalMode("editarCiudadano");
+    setShowModal(true);
+  };
+
+  const agregarLicencia = (ciudadano) => {
+    setSelectedCiudadano(ciudadano);
+    setModalMode("licencia");
+    setShowModal(true);
+  };
+
+  const verCiudadano = (ciudadano) => {
+    setSelectedCiudadano(ciudadano);
+    setModalMode("ver");
+    setShowModal(true);
+  };
+
+  const previewLicencia = (ciudadano, licencia) => {
+    setSelectedCiudadano(ciudadano);
+    setSelectedLicencia(licencia);
+    setModalMode("previewLicencia");
+    setShowModal(true);
   };
 
   return (
@@ -50,79 +76,101 @@ function RegistrosPage() {
             <th>Nombre</th>
             <th>CURP</th>
             <th>Teléfono</th>
-            <th>Nacionalidad</th>
             <th>Licencias</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-        {ciudadanos
+          {ciudadanos
             .filter((c) =>
-            c.datosPersonales?.nombre?.toLowerCase().includes(search.toLowerCase()) ||
-            c.datosPersonales?.curp?.toLowerCase().includes(search.toLowerCase())
+              c.datosPersonales?.nombre.toLowerCase().includes(search.toLowerCase()) ||
+              c.datosPersonales?.curp.toLowerCase().includes(search.toLowerCase())
             )
             .map((c) => (
-            <tr key={c._id}>
-                <td>
-                {c.datosPersonales?.nombre} {c.datosPersonales?.apellidoPaterno}{" "}
-                {c.datosPersonales?.apellidoMaterno}
-                </td>
+              <tr key={c._id}>
+                <td>{c.datosPersonales?.nombre} {c.datosPersonales?.apellidoPaterno} {c.datosPersonales?.apellidoMaterno}</td>
                 <td>{c.datosPersonales?.curp}</td>
                 <td>{c.datosPersonales?.telefono}</td>
-                <td>{c.datosPersonales?.nacionalidad}</td>
+                <td>{c.licencias?.length || 0}</td>
                 <td>
-                {c.licencias?.length === 0
-                    ? "Sin licencia"
-                    : c.licencias?.length === 1
-                    ? "1 licencia"
-                    : `${c.licencias?.length} licencias`}
+                  <button style={styles.actionButton} onClick={() => verCiudadano(c)}>👁 Ver</button>
+                  <button style={styles.actionButton} onClick={() => editarCiudadano(c)}>✏️ Editar</button>
+                  <button style={styles.actionButton} onClick={() => agregarLicencia(c)}>➕ Licencia</button>
                 </td>
-                <td>
-                <button
-                    style={styles.actionButton}
-                    onClick={() => alert(`Ver detalle de ${c.datosPersonales?.nombre}`)}
-                >
-                    👁️ Ver
-                </button>
-                <button
-                    style={styles.actionButton}
-                    onClick={() => alert(`Agregar licencia a ${c.datosPersonales?.nombre}`)}
-                >
-                    ➕ Licencia
-                </button>
-                </td>
-            </tr>
+              </tr>
             ))}
         </tbody>
-
       </table>
+
+      {/* Modal */}
+      {showModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            {modalMode === "editarCiudadano" && (
+              <>
+                <h3>Editar Ciudadano</h3>
+                <DatosPersonalesForm ciudadano={selectedCiudadano} onSaved={() => setShowModal(false)} />
+              </>
+            )}
+
+            {modalMode === "licencia" && (
+              <>
+                <h3>Agregar Licencia a {selectedCiudadano?.datosPersonales?.nombre}</h3>
+                <LicenciaForm ciudadanoId={selectedCiudadano._id} setShowLicencia={() => setShowModal(false)} />
+              </>
+            )}
+
+            {modalMode === "ver" && (
+              <>
+                <h3>Datos de {selectedCiudadano?.datosPersonales?.nombre}</h3>
+                <LicenciaPage ciudadanoId={selectedCiudadano._id} />
+                <h4>Licencias</h4>
+                {selectedCiudadano?.licencias?.map((lic) => (
+                  <div key={lic._id} style={styles.licenciaCard}>
+                    <p><strong>Tipo:</strong> {lic.tipo} - {lic.nombreTipo}</p>
+                    <p><strong>Folio:</strong> {lic.folio}</p>
+                    <button style={styles.actionButton} onClick={() => previewLicencia(selectedCiudadano, lic)}>👁 Preview</button>
+                    <button style={styles.actionButton}>✏️ Editar Licencia</button>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {modalMode === "previewLicencia" && (
+              <>
+                <h3>Preview de Licencia</h3>
+                <LicenciaPage ciudadanoId={selectedCiudadano._id} licenciaId={selectedLicencia._id} />
+              </>
+            )}
+
+            <button style={styles.cancelButton} onClick={() => setShowModal(false)}>❌ Cerrar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 const styles = {
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    marginTop: "20px",
-  },
-  th: {
-    borderBottom: "2px solid #ccc",
-    textAlign: "left",
-    padding: "8px",
-  },
-  td: {
-    borderBottom: "1px solid #eee",
-    padding: "8px",
-  },
+  table: { width: "100%", borderCollapse: "collapse", marginTop: "20px" },
   actionButton: {
-    marginRight: "8px",
-    padding: "6px 10px",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    background: "#64748b",
-    color: "#fff",
+    marginRight: "8px", padding: "6px 10px", border: "none", borderRadius: "4px",
+    cursor: "pointer", background: "#2563eb", color: "#fff",
+  },
+  modalOverlay: {
+    position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+    background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center",
+  },
+  modal: {
+    background: "#fff", padding: "20px", borderRadius: "8px", width: "700px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.2)", maxHeight: "90vh", overflowY: "auto",
+  },
+  cancelButton: {
+    marginTop: "10px", padding: "8px 12px", background: "#dc2626", border: "none",
+    borderRadius: "5px", color: "#fff", cursor: "pointer",
+  },
+  licenciaCard: {
+    background: "#f1f5f9", padding: "10px", borderRadius: "6px", marginBottom: "10px",
   },
 };
 

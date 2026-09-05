@@ -3,6 +3,16 @@ import React, { useState, useEffect } from "react";
 function UsuariosPage() {
   const [usuarios, setUsuarios] = useState([]);
   const [search, setSearch] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState("create"); // "create" o "edit"
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [formData, setFormData] = useState({
+    nombre: "",
+    correo: "",
+    edad: "",
+    contrasena: "",
+    rol: "USER",
+  });
 
   // Cargar usuarios al montar la página
   useEffect(() => {
@@ -21,38 +31,90 @@ function UsuariosPage() {
     fetchUsuarios();
   }, []);
 
-  // Acción de deshabilitar usuario
-  const deshabilitarUsuario = async (id) => {
+  // Acción de habilitar/deshabilitar usuario
+  const toggleUsuario = async (id, estatusActual) => {
     const token = localStorage.getItem("token");
     try {
+      const nuevoEstatus = estatusActual === 1 ? 0 : 1;
       const res = await fetch(`http://localhost:3020/api/v1/usuarios/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ clave_estatus: 0 }),
+        body: JSON.stringify({ clave_estatus: nuevoEstatus }),
       });
       const data = await res.json();
-      alert(`Usuario ${data.nombre} deshabilitado`);
+      alert(`Usuario ${data.nombre} ${nuevoEstatus === 1 ? "habilitado" : "deshabilitado"}`);
       setUsuarios((prev) =>
-        prev.map((u) => (u._id === id ? { ...u, clave_estatus: 0 } : u))
+        prev.map((u) => (u._id === id ? { ...u, clave_estatus: nuevoEstatus } : u))
       );
     } catch (err) {
-      alert("Error al deshabilitar usuario");
+      alert("Error al cambiar estatus de usuario");
     }
   };
 
-  // Acción de editar usuario (placeholder)
+  // Acción de editar usuario
   const editarUsuario = (usuario) => {
-    alert(`Editar usuario: ${usuario.nombre}`);
-    // Aquí puedes abrir un modal con formulario de edición
+    setModalMode("edit");
+    setSelectedUser(usuario);
+    setFormData({
+      nombre: usuario.nombre,
+      correo: usuario.correo,
+      edad: usuario.edad || "",
+      contrasena: "",
+      rol: usuario.rol,
+    });
+    setShowModal(true);
   };
 
-  // Acción de registrar nuevo usuario (placeholder)
+  // Acción de registrar nuevo usuario
   const registrarUsuario = () => {
-    alert("Registrar nuevo usuario");
-    // Aquí puedes abrir un modal con formulario de creación
+    setModalMode("create");
+    setSelectedUser(null);
+    setFormData({ nombre: "", correo: "", edad: "", contrasena: "", rol: "USER" });
+    setShowModal(true);
+  };
+
+  // Guardar cambios (crear o editar)
+  const handleSave = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      if (modalMode === "create") {
+        const res = await fetch("http://localhost:3020/api/v1/usuarios", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...formData, clave_estatus: 1 }),
+        });
+        const data = await res.json();
+
+        // 👇 Ajuste: el usuario viene en data.data
+        const nuevoUsuario = data.data;
+
+        setUsuarios((prev) => [...prev, nuevoUsuario]);
+        alert("✅ Usuario creado correctamente");
+      }else {
+        const res = await fetch(`http://localhost:3020/api/v1/usuarios/${selectedUser._id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+        setUsuarios((prev) =>
+          prev.map((u) => (u._id === selectedUser._id ? { ...u, ...formData } : u))
+        );
+        alert("✅ Usuario editado correctamente");
+      }
+      setShowModal(false);
+    } catch (err) {
+      alert("❌ Error al guardar usuario");
+    }
   };
 
   return (
@@ -79,6 +141,7 @@ function UsuariosPage() {
           <tr>
             <th>Nombre</th>
             <th>Correo</th>
+            <th>Edad</th>
             <th>Rol</th>
             <th>Estatus</th>
             <th>Acciones</th>
@@ -94,61 +157,104 @@ function UsuariosPage() {
               <tr key={u._id}>
                 <td>{u.nombre}</td>
                 <td>{u.correo}</td>
+                <td>{u.edad}</td>
                 <td>{u.rol}</td>
                 <td>{u.clave_estatus === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <button
-                    style={styles.actionButton}
-                    onClick={() => editarUsuario(u)}
-                  >
+                  <button style={styles.actionButton} onClick={() => editarUsuario(u)}>
                     ✏️ Editar
                   </button>
                   <button
                     style={styles.actionButton}
-                    onClick={() => deshabilitarUsuario(u._id)}
+                    onClick={() => toggleUsuario(u._id, u.clave_estatus)}
                   >
-                    🚫 Deshabilitar
+                    {u.clave_estatus === 1 ? "🚫 Deshabilitar" : "✅ Habilitar"}
                   </button>
                 </td>
               </tr>
             ))}
         </tbody>
       </table>
+
+      {/* Modal */}
+      {showModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <h3>{modalMode === "create" ? "Registrar Usuario" : "Editar Usuario"}</h3>
+            <input
+              style={styles.input}
+              placeholder="Nombre"
+              value={formData.nombre}
+              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+            />
+            <input
+              style={styles.input}
+              placeholder="Correo"
+              value={formData.correo}
+              onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
+            />
+            <input
+              style={styles.input}
+              placeholder="Edad"
+              type="number"
+              value={formData.edad}
+              onChange={(e) => setFormData({ ...formData, edad: e.target.value })}
+            />
+            <input
+              style={styles.input}
+              placeholder="Contraseña"
+              type="password"
+              value={formData.contrasena}
+              onChange={(e) => setFormData({ ...formData, contrasena: e.target.value })}
+            />
+            <select
+              style={styles.input}
+              value={formData.rol}
+              onChange={(e) => setFormData({ ...formData, rol: e.target.value })}
+            >
+              <option value="ADMIN">Administrador</option>
+              <option value="ENCARGADO">Encargado</option>
+            </select>
+            <div style={{ marginTop: "20px", textAlign: "right" }}>
+              <button style={styles.saveButton} onClick={handleSave}>💾 Guardar</button>
+              <button style={styles.cancelButton} onClick={() => setShowModal(false)}>❌ Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
+
 const styles = {
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    marginTop: "20px",
-  },
-  th: {
-    borderBottom: "2px solid #ccc",
-    textAlign: "left",
-    padding: "8px",
-  },
-  td: {
-    borderBottom: "1px solid #eee",
-    padding: "8px",
-  },
+  table: { width: "100%", borderCollapse: "collapse", marginTop: "20px" },
   actionButton: {
-    marginRight: "8px",
-    padding: "6px 10px",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    background: "#64748b",
-    color: "#fff",
+    marginRight: "8px", padding: "6px 10px", border: "none", borderRadius: "4px",
+    cursor: "pointer", background: "#64748b", color: "#fff",
   },
   addButton: {
-    padding: "8px 12px",
-    background: "#22c55e",
-    border: "none",
-    borderRadius: "5px",
-    color: "#fff",
-    cursor: "pointer",
+    padding: "8px 12px", background: "#22c55e", border: "none", borderRadius: "5px",
+    color: "#fff", cursor: "pointer",
+  },
+  input: {
+    width: "100%", padding: "10px", marginBottom: "10px", border: "1px solid #ccc", borderRadius: "5px",
+  },
+  modalOverlay: {
+    position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+    background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center",
+  },
+  modal: {
+    background: "#fff", padding: "20px", borderRadius: "8px", width: "400px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+  },
+  saveButton: {
+    padding: "8px 12px", background: "#2563eb", border: "none", borderRadius: "5px",
+    color: "#fff", cursor: "pointer", marginRight: "10px",
+  },
+  cancelButton: {
+    padding: "8px 12px", background: "#dc2626", border: "none", borderRadius: "5px",
+    color: "#fff", cursor: "pointer",
   },
 };
 

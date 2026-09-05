@@ -73,6 +73,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(logMiddleware);
 app.use(express.urlencoded({ extended: false }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Swagger
 if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'stg') {
