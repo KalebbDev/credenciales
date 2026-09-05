@@ -123,7 +123,7 @@ function RegistrosPage() {
             {modalMode === "ver" && (
               <>
                 <h3>Datos de {selectedCiudadano?.datosPersonales?.nombre}</h3>
-                <LicenciaPage ciudadanoId={selectedCiudadano._id} />
+                {/*<LicenciaPage ciudadanoId={selectedCiudadano._id} />*/}
                 <h4>Licencias</h4>
                 {selectedCiudadano?.licencias?.map((lic) => (
                   <div key={lic._id} style={styles.licenciaCard}>
