@@ -8,16 +8,37 @@ const usuarioController = require('../controllers/usuarioController');
 router.post('/login', usuarioController.loginUsuario);
 
 // CRUD protegido
-// Solo ADMIN puede crear usuarios
-router.post('/', authMiddleware, roleMiddleware(['ADMIN']), usuarioController.crearUsuario);
+// SUPER_ADMINISTRADOR y ADMIN pueden crear usuarios
+router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware(["SUPER_ADMINISTRADOR", "ADMIN"]),
+  usuarioController.crearUsuario
+);
 
-// Solo ADMIN puede ver lista de usuarios
-router.get('/', authMiddleware, roleMiddleware(['ADMIN']), usuarioController.obtenerUsuarios);
+// Listar usuarios
+router.get(
+  "/",
+  authMiddleware,
+  roleMiddleware(["ADMIN", "SUPER_ADMINISTRADOR"]), // ambos pueden listar
+  usuarioController.listarUsuarios
+);
 
-// Solo ADMIN puede actualizar usuarios
-router.put('/:id', authMiddleware, roleMiddleware(['ADMIN']), usuarioController.actualizarUsuario);
+// SUPER ADMINISTRADOR y ADMIN pueden actualizar
+router.put(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(["SUPER_ADMINISTRADOR", "ADMIN"]),
+  usuarioController.actualizarUsuario
+);
 
-// Solo ADMIN puede eliminar usuarios
-router.delete('/:id', authMiddleware, roleMiddleware(['ADMIN']), usuarioController.eliminarUsuario);
+// Solo SUPER_ADMIN puede eliminar usuarios
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(["SUPER_ADMINISTRADOR"]),
+  usuarioController.eliminarUsuario
+);
+
 
 module.exports = router;

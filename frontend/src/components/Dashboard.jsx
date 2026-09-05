@@ -17,7 +17,7 @@ function Dashboard({ usuario, onLogout }) {
       {menuOpen && (
         <aside style={{ width: "220px", background: "#1e293b", color: "#fff", padding: "20px" }}>
           <h3>Menú</h3>
-          {usuario.rol === "ADMIN" && (
+          {(usuario.rol === "ADMIN" || usuario.rol === "SUPER_ADMINISTRADOR") && (
             <button style={styles.menuButton} onClick={() => setView("usuarios")}>
               Usuarios
             </button>
@@ -50,7 +50,7 @@ function Dashboard({ usuario, onLogout }) {
           )
         )}
 
-        {view === "usuarios" && usuario.rol === "ADMIN" && (
+        {view === "usuarios" && (usuario.rol === "ADMIN" || usuario.rol === "SUPER_ADMINISTRADOR") && (
           <UsuariosPage />
         )}
         

@@ -6,7 +6,7 @@ const usuarioSchema = new mongoose.Schema({
   edad: { type: Number },
   contrasena: { type: String, required: true },
   clave_estatus: { type: Number, default: 1 }, // 1 = habilitado, 0 = deshabilitado
-  rol: { type: String, enum: ['ADMIN', 'ENCARGADO'], required: true }
+  rol: { type: String, enum: ["SUPER_ADMINISTRADOR", "ADMIN", "ENCARGADO"], required: true }
 });
 
 module.exports = mongoose.model('Usuario', usuarioSchema);

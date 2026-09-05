@@ -21,12 +21,14 @@ const Login = ({ onLogin }) => {
       });
 
       const data = await res.json();
+      
 
       if (!res.ok) {
         throw new Error(data.message || "Error al iniciar sesión");
       }
 
       localStorage.setItem("token", data.data.token);
+      localStorage.setItem("usuario", JSON.stringify(data.data.usuario));
       onLogin(data.data.usuario); // ✅ ahora sí funciona
     } catch (err) {
       setError(err.message);

@@ -47,14 +47,38 @@ exports.loginUsuario = async (correo, contrasena) => {
     };
 };
 
+//READ seleccionado
+exports.listarTodos = async (rolSolicitante) => {
+  if (rolSolicitante === "SUPER_ADMINISTRADOR") {
+    // El super admin ve todo
+    return await Usuario.find({}, { contrasena: 0, __v: 0 });
+  } else {
+    // Admin y encargado no ven al super admin
+    return await Usuario.find(
+      { rol: { $ne: "SUPER_ADMINISTRADOR" } },
+      { contrasena: 0, __v: 0 }
+    );
+  }
+};
+
+
 // READ
 exports.obtenerUsuarios = async () => {
   // Ocultamos contraseña y __v
   return await Usuario.find({}, { contrasena: 0, __v: 0 });
 };
 
-exports.crearUsuario = async ({ nombre, correo, edad, contrasena, rol, clave_estatus }) => {
+exports.crearUsuario = async ({ nombre, correo, edad, contrasena, rol, clave_estatus }, rolSolicitante) => {
   if (!contrasena) throw new HttpError("La contraseña es obligatoria", 400);
+
+  // Validar permisos según rol solicitante
+  if (rolSolicitante === "ADMIN") {
+    if (rol === "SUPER_ADMINISTRADOR") {
+      throw new HttpError("Un ADMIN no puede crear un SUPER_ADMINISTRADOR", 403);
+    }
+  } else if (rolSolicitante !== "SUPER_ADMINISTRADOR") {
+    throw new HttpError("No tienes permisos para crear usuarios", 403);
+  }
 
   const salt = await bcrypt.genSalt(10);
   const hashedContrasena = await bcrypt.hash(contrasena, salt);
@@ -64,8 +88,8 @@ exports.crearUsuario = async ({ nombre, correo, edad, contrasena, rol, clave_est
     correo,
     edad,
     contrasena: hashedContrasena,
-    rol,                        // ADMIN o ENCARGADO
-    clave_estatus: clave_estatus ?? 1 // por defecto habilitado
+    rol,                        // validado arriba
+    clave_estatus: clave_estatus ?? 1
   });
 
   return await nuevo.save();
@@ -73,12 +97,39 @@ exports.crearUsuario = async ({ nombre, correo, edad, contrasena, rol, clave_est
 
 
 
-exports.actualizarUsuario = async (id, { nombre, correo, edad, contrasena, rol, clave_estatus }) => {
-  let updateData = { nombre, correo, edad, rol, clave_estatus };
 
-  if (contrasena) {
-    const salt = await bcrypt.genSalt(10);
-    updateData.contrasena = await bcrypt.hash(contrasena, salt);
+exports.actualizarUsuario = async (id, datos, rolSolicitante) => {
+  let updateData = {};
+
+  // SUPER ADMINISTRADOR puede todo
+  if (rolSolicitante === "SUPER_ADMINISTRADOR") {
+    updateData = { 
+      nombre: datos.nombre, 
+      correo: datos.correo, 
+      edad: datos.edad, 
+      rol: datos.rol, 
+      clave_estatus: datos.clave_estatus 
+    };
+
+    if (datos.contrasena) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.contrasena = await bcrypt.hash(datos.contrasena, salt);
+    }
+  }
+
+  // ADMIN tiene restricciones
+  else if (rolSolicitante === "ADMIN") {
+    updateData = { 
+      nombre: datos.nombre, 
+      correo: datos.correo, 
+      edad: datos.edad, 
+      clave_estatus: datos.clave_estatus 
+    };
+
+    // Solo puede asignar ADMIN o ENCARGADO
+    if (datos.rol && datos.rol !== "SUPER_ADMINISTRADOR") {
+      updateData.rol = datos.rol;
+    }
   }
 
   return await Usuario.findByIdAndUpdate(
@@ -87,6 +138,7 @@ exports.actualizarUsuario = async (id, { nombre, correo, edad, contrasena, rol, 
     { new: true, projection: { contrasena: 0, __v: 0 } }
   );
 };
+
 
 
 exports.eliminarUsuario = async (id) => {

@@ -14,7 +14,12 @@ router.get("/:ciudadanoId", authMiddleware, roleMiddleware(["ADMIN", "ENCARGADO"
 router.put("/:ciudadanoId/:licenciaId", authMiddleware, roleMiddleware(["ADMIN", "ENCARGADO"]), licenciaController.editarLicencia);
 
 // Eliminar licencia de un ciudadano
-router.delete("/:ciudadanoId/:licenciaId", authMiddleware, roleMiddleware(["ADMIN", "ENCARGADO"]), licenciaController.eliminarLicencia);
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(["SUPER_ADMINISTRADOR"]),
+  licenciaController.eliminarLicencia
+);
 
 // Listar todas las licencias de todos los ciudadanos
 router.get("/", authMiddleware, roleMiddleware(["ADMIN", "ENCARGADO"]), licenciaController.listarTodasLicencias);

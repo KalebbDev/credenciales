@@ -51,7 +51,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(["ADMIN", "ENCARGADO"]),
+  roleMiddleware(["SUPER_ADMINISTRADOR"]),
   ciudadanoController.eliminarCiudadano
 );
 

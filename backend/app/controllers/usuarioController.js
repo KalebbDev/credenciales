@@ -12,6 +12,16 @@ exports.loginUsuario = async (req, res) => {
   }
 };
 
+//READ selecionado
+exports.listarUsuarios = async (req, res) => {
+  try {
+    const usuarios = await usuarioService.listarTodos(req.usuario.rol);
+    res.json(usuarios);
+  } catch (err) {
+    res.status(500).json({ message: "Error al listar usuarios", error: err.message });
+  }
+};
+
 // READ
 exports.obtenerUsuarios = async (req, res) => {
   try {
@@ -25,7 +35,7 @@ exports.obtenerUsuarios = async (req, res) => {
 // CREATE
 exports.crearUsuario = async (req, res) => {
   try {
-    const data = await usuarioService.crearUsuario(req.body);
+    const data = await usuarioService.crearUsuario(req.body, req.usuario.rol);
     respuestaHTTP(res, 201, 'Usuario creado.', data);
   } catch (error) {
     let statusCode = 500;
@@ -46,7 +56,11 @@ exports.crearUsuario = async (req, res) => {
 // UPDATE
 exports.actualizarUsuario = async (req, res) => {
   try {
-    const data = await usuarioService.actualizarUsuario(req.params.id, req.body);
+    const data = await usuarioService.actualizarUsuario(
+      req.params.id,
+      req.body,
+      req.usuario.rol // rol del que hace la petición
+    );
     respuestaHTTP(res, 200, 'Usuario actualizado.', data);
   } catch (error) {
     let statusCode = 500;
@@ -62,6 +76,7 @@ exports.actualizarUsuario = async (req, res) => {
     respuestaHTTP(res, statusCode, message);
   }
 };
+
 
 //DELETE
 exports.eliminarUsuario = async (req, res) => {

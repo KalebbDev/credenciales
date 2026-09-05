@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 function UsuariosPage() {
   const [usuarios, setUsuarios] = useState([]);
+  const [usuario, setUsuario] = useState(null); // usuario logueado
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("create"); // "create" o "edit"
@@ -11,8 +12,16 @@ function UsuariosPage() {
     correo: "",
     edad: "",
     contrasena: "",
-    rol: "USER",
+    rol: "ADMIN",
   });
+
+  // Cargar usuario logueado desde localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem("usuario");
+    if (storedUser) {
+      setUsuario(JSON.parse(storedUser));
+    }
+  }, []);
 
   // Cargar usuarios al montar la página
   useEffect(() => {
@@ -23,7 +32,7 @@ function UsuariosPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        setUsuarios(data.data || []);
+        setUsuarios(data || []);
       } catch (err) {
         console.error("Error al cargar usuarios:", err);
       }
@@ -51,6 +60,22 @@ function UsuariosPage() {
       );
     } catch (err) {
       alert("Error al cambiar estatus de usuario");
+    }
+  };
+
+  // Acción eliminar usuario
+  const eliminarUsuario = async (id) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`http://localhost:3020/api/v1/usuarios/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await res.json();
+      alert("✅ Usuario eliminado correctamente");
+      setUsuarios((prev) => prev.filter((u) => u._id !== id));
+    } catch (err) {
+      alert("❌ Error al eliminar usuario");
     }
   };
 
@@ -90,13 +115,10 @@ function UsuariosPage() {
           body: JSON.stringify({ ...formData, clave_estatus: 1 }),
         });
         const data = await res.json();
-
-        // 👇 Ajuste: el usuario viene en data.data
         const nuevoUsuario = data.data;
-
         setUsuarios((prev) => [...prev, nuevoUsuario]);
         alert("✅ Usuario creado correctamente");
-      }else {
+      } else {
         const res = await fetch(`http://localhost:3020/api/v1/usuarios/${selectedUser._id}`, {
           method: "PUT",
           headers: {
@@ -105,7 +127,7 @@ function UsuariosPage() {
           },
           body: JSON.stringify(formData),
         });
-        const data = await res.json();
+        await res.json();
         setUsuarios((prev) =>
           prev.map((u) => (u._id === selectedUser._id ? { ...u, ...formData } : u))
         );
@@ -170,6 +192,15 @@ function UsuariosPage() {
                   >
                     {u.clave_estatus === 1 ? "🚫 Deshabilitar" : "✅ Habilitar"}
                   </button>
+                  {/* Solo se muestra si el usuario logueado es SUPER_ADMINISTRADOR */}
+                  {usuario?.rol === "SUPER_ADMINISTRADOR" && (
+                    <button
+                      style={{ ...styles.actionButton, background: "red" }}
+                      onClick={() => eliminarUsuario(u._id)}
+                    >
+                      🗑 Eliminar
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -200,18 +231,24 @@ function UsuariosPage() {
               value={formData.edad}
               onChange={(e) => setFormData({ ...formData, edad: e.target.value })}
             />
-            <input
-              style={styles.input}
-              placeholder="Contraseña"
-              type="password"
-              value={formData.contrasena}
-              onChange={(e) => setFormData({ ...formData, contrasena: e.target.value })}
-            />
+            {/* Solo mostrar el campo de contraseña si el logueado es SUPER_ADMINISTRADOR */}
+            {usuario?.rol === "SUPER_ADMINISTRADOR" && (
+              <input
+                style={styles.input}
+                placeholder="Contraseña"
+                type="password"
+                value={formData.contrasena}
+                onChange={(e) => setFormData({ ...formData, contrasena: e.target.value })}
+              />
+            )}
             <select
               style={styles.input}
               value={formData.rol}
               onChange={(e) => setFormData({ ...formData, rol: e.target.value })}
             >
+              {usuario?.rol === "SUPER_ADMINISTRADOR" && (
+                <option value="SUPER_ADMINISTRADOR">Super Administrador</option>
+              )}
               <option value="ADMIN">Administrador</option>
               <option value="ENCARGADO">Encargado</option>
             </select>

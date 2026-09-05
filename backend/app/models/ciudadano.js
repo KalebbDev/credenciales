@@ -29,7 +29,7 @@ const CiudadanoSchema = new mongoose.Schema({
   ],
   registradoPor: {
     nombre: String,
-    rol: { type: String, enum: ["ADMIN", "ENCARGADO"] }
+    rol: { type: String, enum: ["SUPER ADMIN","ADMIN", "ENCARGADO"] }
   }
 });
 
