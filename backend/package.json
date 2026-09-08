@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node /usr/src/app/bin/www",
+  
     "dev": "npx nodemon -L --inspect=0.0.0.0 --legacy-watch /usr/src/app/bin/www",
     "lint": "npx eslint ./app/**/*.js",
     "lint:fix": "eslint ./app/**/*.js --fix",
