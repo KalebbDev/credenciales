@@ -7,7 +7,7 @@ const roleMiddleware = require("../middlewares/roleMiddleware");
 
 const upload = require("../config/upload");
 
-// Registrar ciudadano (solo ADMIN o ENCARGADO)
+// Registrar ciudadano (Todos)
 router.post(
   "/",
   authMiddleware,

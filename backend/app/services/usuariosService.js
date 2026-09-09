@@ -49,13 +49,13 @@ exports.loginUsuario = async (correo, contrasena) => {
 
 //READ seleccionado
 exports.listarTodos = async (rolSolicitante) => {
-  if (rolSolicitante === "SUPER_ADMINISTRADOR") {
+  if (rolSolicitante === "SUPER_ADMINISTRADOR", "ADMIN") {
     // El super admin ve todo
     return await Usuario.find({}, { contrasena: 0, __v: 0 });
   } else {
     // Admin y encargado no ven al super admin
     return await Usuario.find(
-      { rol: { $ne: "SUPER_ADMINISTRADOR" } },
+      { rol: { $ne: "ENCARGADO" } },
       { contrasena: 0, __v: 0 }
     );
   }
