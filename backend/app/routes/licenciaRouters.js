@@ -5,13 +5,13 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const roleMiddleware = require("../middlewares/roleMiddleware");
 
 // Crear licencia
-router.post("/:ciudadanoId", authMiddleware, roleMiddleware(["ADMIN", "ENCARGADO"]), licenciaController.crearLicencia);
+router.post("/:ciudadanoId", authMiddleware, roleMiddleware(["SUPER_ADMINISTRADOR","ADMIN", "ENCARGADO"]), licenciaController.crearLicencia);
 
 // Listar licencias
-router.get("/:ciudadanoId", authMiddleware, roleMiddleware(["ADMIN", "ENCARGADO"]), licenciaController.listarLicencias);
+router.get("/:ciudadanoId", authMiddleware, roleMiddleware(["SUPER_ADMINISTRADOR","ADMIN", "ENCARGADO"]), licenciaController.listarLicencias);
 
 // Editar licencia de un ciudadano
-router.put("/:ciudadanoId/:licenciaId", authMiddleware, roleMiddleware(["ADMIN", "ENCARGADO"]), licenciaController.editarLicencia);
+router.put("/:ciudadanoId/:licenciaId", authMiddleware, roleMiddleware(["SUPER_ADMINISTRADOR","ADMIN", "ENCARGADO"]), licenciaController.editarLicencia);
 
 // Eliminar licencia de un ciudadano
 router.delete(

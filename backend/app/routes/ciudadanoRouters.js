@@ -11,7 +11,7 @@ const upload = require("../config/upload");
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware(["ADMIN", "ENCARGADO"]),
+  roleMiddleware(["SUPER_ADMINISTRADOR","ADMIN", "ENCARGADO"]),
   upload.fields([
     { name: "fotografia", maxCount: 1 },
     { name: "firma", maxCount: 1 }
@@ -27,7 +27,7 @@ router.get("/:id", ciudadanoController.buscarPorId);
 router.get(
   "/:curp",
   authMiddleware,
-  roleMiddleware(["ADMIN", "ENCARGADO"]),
+  roleMiddleware(["SUPER_ADMINISTRADOR","ADMIN", "ENCARGADO"]),
   ciudadanoController.buscarPorCurp
 );
 
@@ -35,7 +35,7 @@ router.get(
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware(["ADMIN", "ENCARGADO"]),
+  roleMiddleware(["SUPER_ADMINISTRADOR","ADMIN", "ENCARGADO"]),
   ciudadanoController.listarCiudadanos
 );
 
@@ -43,7 +43,7 @@ router.get(
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware(["ADMIN", "ENCARGADO"]),
+  roleMiddleware(["SUPER_ADMINISTRADOR","ADMIN", "ENCARGADO"]),
   ciudadanoController.editarCiudadano
 );
 
