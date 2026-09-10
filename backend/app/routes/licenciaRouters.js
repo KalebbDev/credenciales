@@ -24,5 +24,11 @@ router.delete(
 // Listar todas las licencias de todos los ciudadanos
 router.get("/", authMiddleware, roleMiddleware(["ADMIN", "ENCARGADO"]), licenciaController.listarTodasLicencias);
 
+// Generar y mostrar PDF de una licencia
+router.get("/:licenciaId/pdf", 
+  authMiddleware, 
+  roleMiddleware(["SUPER_ADMINISTRADOR","ADMIN", "ENCARGADO"]), 
+  licenciaController.generarLicenciaPDF
+);
 
 module.exports = router;

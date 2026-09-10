@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import LicenciaPreview from "./LicenciaPreview";
 
 function LicenciaPage({ ciudadanoId, setShowLicencia }) {
   const [ciudadano, setCiudadano] = useState(null);
@@ -384,61 +385,43 @@ function LicenciaPage({ ciudadanoId, setShowLicencia }) {
           </div>
 
         </div>
-
-
-        
-
         {/* =====================================
             PDF
         ====================================== */}
-
         {licencia && (
           <div style={styles.pdfSection}>
-
             <div style={styles.pdfHeader}>
-
               <div>
-                 <div style={styles.sectionTitle}>
-            <i className="bi bi-person-vcard"></i>
-
-            <span>
-              Previa Vista
-            </span>
-          </div>
+                <div style={styles.sectionTitle}>
+                  <i className="bi bi-person-vcard"></i>
+                  <span> Previa Vista </span>
+                </div>
               </div>
-
             </div>
-
 
             <div style={styles.pdfViewerContainer}>
-
-              <iframe
-                src={`http://localhost:3020/api/v1/licencias/${licencia._id}/pdf`}
-                style={styles.pdfViewer}
-                title="Licencia PDF"
-              />
-
+              <LicenciaPreview licencia={licencia} />
             </div>
-
-
             <div style={styles.pdfButtons}>
-
-              <a
-                href={`http://localhost:3020/api/v1/licencias/${licencia._id}/pdf`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
                 style={styles.pdfButton}
+                onClick={() => {
+                  const iframe = document.querySelector("iframe[title='Licencia PDF']");
+                  if (iframe) {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                  } else {
+                    alert("No se encontró la vista previa de la licencia.");
+                  }
+                }}
               >
                 <i className="bi bi-file-earmark-pdf me-2"></i>
-                Ver / descargar PDF
-              </a>
-
+                Imprimir licencia
+              </button>
             </div>
 
           </div>
         )}
-
-
         {/* =====================================
             BOTÓN NUEVA LICENCIA
         ====================================== */}

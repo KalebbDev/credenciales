@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "start": "node /usr/src/app/bin/www",
-  
     "dev": "npx nodemon -L --inspect=0.0.0.0 --legacy-watch /usr/src/app/bin/www",
     "lint": "npx eslint ./app/**/*.js",
     "lint:fix": "eslint ./app/**/*.js --fix",
@@ -38,6 +37,7 @@
     "nodemailer": "^6.10.1",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
+    "pdf-to-printer": "^5.8.1",
     "pdf2pic": "^3.1.4",
     "pdfkit": "^0.13.0",
     "qrcode": "^1.5.4",
