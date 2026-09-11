@@ -5,11 +5,16 @@ function LicenciaPage({ ciudadanoId, setShowLicencia }) {
   const [ciudadano, setCiudadano] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ==========================================================
+  // CARGAR CIUDADANO
+  // ==========================================================
   useEffect(() => {
     const fetchCiudadano = async () => {
       const token = localStorage.getItem("token");
 
       try {
+        setLoading(true);
+
         const res = await fetch(
           `http://localhost:3020/api/v1/ciudadanos/${ciudadanoId}`,
           {
@@ -23,939 +28,1471 @@ function LicenciaPage({ ciudadanoId, setShowLicencia }) {
 
         if (!res.ok) {
           throw new Error(
-            data.message || "No se pudieron cargar los datos"
+            data.message ||
+              "No se pudieron cargar los datos"
           );
         }
 
         setCiudadano(data);
       } catch (err) {
-        console.error("Error al cargar ciudadano:", err);
+        console.error(
+          "Error al cargar ciudadano:",
+          err
+        );
+
+        setCiudadano(null);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCiudadano();
+    if (ciudadanoId) {
+      fetchCiudadano();
+    }
   }, [ciudadanoId]);
 
-  // ==============================
+  // ==========================================================
   // CARGANDO
-  // ==============================
-
+  // ==========================================================
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div className="spinner-border" style={styles.spinner}></div>
-        <p style={styles.loadingText}>Cargando licencia...</p>
+      <div style={styles.page}>
+        <div style={styles.loadingContainer}>
+          <div
+            className="spinner-border"
+            style={styles.spinner}
+            role="status"
+          ></div>
+
+          <h3 style={styles.loadingTitle}>
+            Cargando licencia
+          </h3>
+
+          <p style={styles.loadingText}>
+            Estamos preparando la información
+            registrada.
+          </p>
+        </div>
       </div>
     );
   }
 
+  // ==========================================================
+  // ERROR
+  // ==========================================================
   if (!ciudadano) {
     return (
-      <div style={styles.errorContainer}>
-        <i
-          className="bi bi-exclamation-circle"
-          style={styles.errorIcon}
-        ></i>
+      <div style={styles.page}>
+        <div style={styles.errorContainer}>
+          <div style={styles.errorIconContainer}>
+            <i className="bi bi-exclamation-triangle-fill"></i>
+          </div>
 
-        <h4>No se pudieron cargar los datos</h4>
+          <h3 style={styles.errorTitle}>
+            No se pudieron cargar los datos
+          </h3>
 
-        <button
-          type="button"
-          onClick={() => setShowLicencia(false)}
-          style={styles.newLicenseButton}
-        >
-          <i className="bi bi-plus-circle me-2"></i>
-          Nueva licencia
-        </button>
+          <p style={styles.errorText}>
+            Ocurrió un problema al obtener la
+            información del ciudadano.
+          </p>
+
+          <button
+            type="button"
+            onClick={() =>
+              setShowLicencia(false)
+            }
+            style={styles.backButton}
+          >
+            <i className="bi bi-arrow-left"></i>
+            Regresar
+          </button>
+        </div>
       </div>
     );
   }
 
-  // Última licencia registrada
+  // ==========================================================
+  // ÚLTIMA LICENCIA REGISTRADA
+  // ==========================================================
   const licencia =
     ciudadano.licencias?.[
       ciudadano.licencias.length - 1
     ];
 
-  const datosPersonales = ciudadano.datosPersonales || {};
+  const datosPersonales =
+    ciudadano.datosPersonales || {};
 
-  // ==============================
-  // DATOS
-  // ==============================
+  // ==========================================================
+  // NOMBRE COMPLETO
+  // ==========================================================
+  const nombreCompleto = [
+    datosPersonales.nombre,
+    datosPersonales.apellidoPaterno,
+    datosPersonales.apellidoMaterno,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-  const nombreCompleto = `
-    ${datosPersonales.nombre || ""}
-    ${datosPersonales.apellidoPaterno || ""}
-    ${datosPersonales.apellidoMaterno || ""}
-  `.trim();
-
+  // ==========================================================
+  // FORMATEAR FECHA
+  // ==========================================================
   const formatearFecha = (fecha) => {
     if (!fecha) return "N/A";
 
-    return new Date(fecha).toLocaleDateString("es-MX", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    return new Date(fecha).toLocaleDateString(
+      "es-MX",
+      {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }
+    );
   };
 
-  const fotografia = datosPersonales.fotografia
-    ? `http://localhost:3020${datosPersonales.fotografia}`
-    : "/placeholder.png";
+  // ==========================================================
+  // IMÁGENES
+  // ==========================================================
+  const fotografia =
+    datosPersonales.fotografia
+      ? `http://localhost:3020${datosPersonales.fotografia}`
+      : "/placeholder.png";
 
   const firma = datosPersonales.firma
     ? `http://localhost:3020${datosPersonales.firma}`
     : "/firma.png";
 
+  // ==========================================================
+  // IMPRIMIR PDF
+  // ==========================================================
+  const imprimirLicencia = () => {
+    const iframe = document.querySelector(
+      "iframe[title='Licencia PDF']"
+    );
+
+    if (iframe) {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } else {
+      alert(
+        "No se encontró la vista previa de la licencia."
+      );
+    }
+  };
+
   return (
     <div style={styles.page}>
+      {/* ======================================================
+          ENCABEZADO
+      ======================================================= */}
+      <div style={styles.header}>
+        <div style={styles.headerContent}>
+          <div style={styles.headerIcon}>
+            <i className="bi bi-card-checklist"></i>
+          </div>
 
-      
+          <div>
+            <h1 style={styles.title}>
+              Licencia Registrada
+            </h1>
 
-      {/* =====================================
-          CONTENIDO PRINCIPAL
-      ====================================== */}
+            <p style={styles.subtitle}>
+              Consulta la información del ciudadano
+              y la vista previa de su licencia
+            </p>
+          </div>
+        </div>
+      </div>
 
+      {/* ======================================================
+          CONTENIDO
+      ======================================================= */}
       <div style={styles.content}>
+        {/* ==================================================
+            INFORMACIÓN PRINCIPAL
+        =================================================== */}
+        <div style={styles.mainCard}>
+          <SectionHeader
+            icon="bi bi-person-vcard-fill"
+            title="Información personal"
+            description="Datos principales del ciudadano registrado"
+            iconStyle={styles.sectionIconBlue}
+          />
 
-        {/* =================================
-            TARJETA DE LICENCIA
-        ================================== */}
-
-        <div style={styles.licenseCard}>
-<div style={styles.sectionTitle}>
-            <i className="bi bi-person-vcard"></i>
-
-            <span>
-              Información Personal
-            </span>
-            
-          </div>
-          {/* FOTO */}
-          <p></p>
-          <div style={styles.photoContainer}>
-            <img
-              src={fotografia}
-              alt="Fotografía del ciudadano"
-              style={styles.photo}
-              onError={(e) => {
-                e.currentTarget.src = "/placeholder.png";
-              }}
-            />
-          </div>
-
-
-          {/* INFORMACIÓN PRINCIPAL */}
-          <div style={styles.mainInformation}>
-
-            <div style={styles.dataRow}>
-              <span style={styles.label}>
-                Nombre:
-              </span>
-
-              <span style={styles.value}>
-                {nombreCompleto || "N/A"}
-              </span>
+          <div style={styles.profileContainer}>
+            {/* FOTO */}
+            <div style={styles.photoContainer}>
+              <img
+                src={fotografia}
+                alt="Fotografía del ciudadano"
+                style={styles.photo}
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "/placeholder.png";
+                }}
+              />
             </div>
 
+            {/* INFORMACIÓN */}
+            <div style={styles.profileInformation}>
+              <InfoRow
+                icon="bi bi-person-fill"
+                iconColor="#0f766e"
+                label="Nombre completo"
+                value={
+                  nombreCompleto || "N/A"
+                }
+              />
 
-            <div style={styles.dataRow}>
-              <span style={styles.label}>
-                CURP:
-              </span>
+              <InfoRow
+                icon="bi bi-card-heading"
+                iconColor="#d97706"
+                label="CURP"
+                value={
+                  datosPersonales.curp ||
+                  "N/A"
+                }
+              />
 
-              <span style={styles.value}>
-                {datosPersonales.curp || "N/A"}
-              </span>
+              <InfoRow
+                icon="bi bi-globe-americas"
+                iconColor="#0891b2"
+                label="Nacionalidad"
+                value={
+                  datosPersonales.nacionalidad ||
+                  "N/A"
+                }
+              />
+
+              <InfoRow
+                icon="bi bi-telephone-fill"
+                iconColor="#16a34a"
+                label="Teléfono"
+                value={
+                  datosPersonales.telefono ||
+                  "N/A"
+                }
+              />
             </div>
-
-
-            <div style={styles.dataRow}>
-              <span style={styles.label}>
-                Nacionalidad:
-              </span>
-
-              <span style={styles.value}>
-                {datosPersonales.nacionalidad || "N/A"}
-              </span>
-            </div>
-
           </div>
-
-
-          {/* =============================
-              FECHAS
-          ============================== */}
-
-          <div style={styles.datesContainer}>
-
-            <div style={styles.dateBox}>
-              <span style={styles.dateLabel}>
-                Expedición:
-              </span>
-
-              <span style={styles.dateValue}>
-                {formatearFecha(licencia?.expedida)}
-              </span>
-            </div>
-
-
-            <div style={styles.dateBox}>
-              <span style={styles.dateLabel}>
-                Vencimiento:
-              </span>
-
-              <span style={styles.dateValue}>
-                {formatearFecha(licencia?.vencimiento)}
-              </span>
-            </div>
-
-          </div>
-
-
-          {/* =============================
-              VIGENCIA
-          ============================== */}
-
-          <div style={styles.validity}>
-            <span style={styles.validityLabel}>
-              Vigencia:
-            </span>
-
-            <span style={styles.validityValue}>
-              {licencia?.periodo || "N/A"} Años
-            </span>
-          </div>
-
-
-          {/* =============================
-              TIPO DE LICENCIA
-          ============================== */}
-
-          <div style={styles.licenseType}>
-
-            <div style={styles.typeCircle}>
-              {licencia?.tipo || "N/A"}
-            </div>
-
-            <div style={styles.typeInformation}>
-              <span style={styles.typeTitle}>
-                Tipo de licencia
-              </span>
-
-              <span style={styles.typeName}>
-                {licencia?.nombreTipo || "N/A"}
-              </span>
-            </div>
-
-          </div>
-
-
-          {/* =============================
-              MATRÍCULA
-          ============================== */}
-
-          <div style={styles.matricula}>
-            <span style={styles.matriculaLabel}>
-              Matrícula:
-            </span>
-
-            <span style={styles.matriculaValue}>
-              {licencia?.matricula || "N/A"}
-            </span>
-          </div>
-
-
-          {/* =============================
-              FOLIO
-          ============================== */}
-
-          <div style={styles.folio}>
-            <span>
-              Folio:
-            </span>
-
-            <strong>
-              {licencia?.folio || "N/A"}
-            </strong>
-          </div>
-
         </div>
 
+        {/* ==================================================
+            LICENCIA
+        =================================================== */}
+        <div style={styles.mainCard}>
+          <SectionHeader
+            icon="bi bi-credit-card-2-front-fill"
+            title="Información de la licencia"
+            description="Datos de identificación y vigencia"
+            iconStyle={styles.sectionIconGreen}
+          />
 
-        {/* =====================================
-            INFORMACIÓN ADICIONAL
-        ====================================== */}
+          <div style={styles.licenseGrid}>
+            {/* TIPO */}
+            <div style={styles.typeCard}>
+              <div style={styles.typeCircle}>
+                {licencia?.tipo || "N/A"}
+              </div>
 
-        <div style={styles.additionalCard}>
-
-          <div style={styles.sectionTitle}>
-            <i className="bi bi-person-vcard"></i>
-
-            <span>
-              Información adicional
-            </span>
-          </div>
-
-
-          <div style={styles.additionalGrid}>
-
-            <div style={styles.additionalItem}>
-              <span>Tipo sanguíneo</span>
-
-              <strong>
-                {datosPersonales.tipoSanguineo || "N/A"}
-              </strong>
-            </div>
-
-
-            <div style={styles.additionalItem}>
-              <span>Teléfono</span>
-
-              <strong>
-                {datosPersonales.telefono || "N/A"}
-              </strong>
-            </div>
-
-
-            <div style={styles.additionalItem}>
-              <span>Fecha de nacimiento</span>
-
-              <strong>
-                {formatearFecha(
-                  datosPersonales.nacimiento
-                )}
-              </strong>
-            </div>
-
-
-            <div style={styles.additionalItem}>
-              <span>Antigüedad</span>
-
-              <strong>
-                {formatearFecha(
-                  licencia?.antiguedad
-                )}
-              </strong>
-            </div>
-
-
-            <div style={styles.additionalItem}>
-              <span>Donador</span>
-
-              <strong>
-                {datosPersonales.donador
-                  ? "Sí"
-                  : "No"}
-              </strong>
-            </div>
-
-
-            <div style={styles.additionalItem}>
-              <span>Alergias</span>
-
-              <strong>
-                {datosPersonales.alergias ||
-                  "Ninguna registrada"}
-              </strong>
-            </div>
-
-          </div>
-
-
-          {/* FIRMA */}
-
-          <div style={styles.signatureContainer}>
-
-            <span style={styles.signatureLabel}>
-              Firma
-            </span>
-
-            <img
-              src={firma}
-              alt="Firma del ciudadano"
-              style={styles.signature}
-              onError={(e) => {
-                e.currentTarget.src = "/firma.png";
-              }}
-            />
-
-          </div>
-
-        </div>
-        {/* =====================================
-            PDF
-        ====================================== */}
-        {licencia && (
-          <div style={styles.pdfSection}>
-            <div style={styles.pdfHeader}>
               <div>
-                <div style={styles.sectionTitle}>
-                  <i className="bi bi-person-vcard"></i>
-                  <span> Previa Vista </span>
-                </div>
+                <span style={styles.smallLabel}>
+                  Tipo de licencia
+                </span>
+
+                <strong style={styles.typeName}>
+                  {licencia?.nombreTipo ||
+                    "N/A"}
+                </strong>
               </div>
             </div>
 
-            <div style={styles.pdfViewerContainer}>
-              <LicenciaPreview licencia={licencia} />
-            </div>
-            <div style={styles.pdfButtons}>
-              <button
-                style={styles.pdfButton}
-                onClick={() => {
-                  const iframe = document.querySelector("iframe[title='Licencia PDF']");
-                  if (iframe) {
-                    iframe.contentWindow.focus();
-                    iframe.contentWindow.print();
-                  } else {
-                    alert("No se encontró la vista previa de la licencia.");
+            {/* MATRÍCULA */}
+            <LicenseInfoCard
+              icon="bi bi-upc-scan"
+              iconStyle={
+                styles.iconBackgroundBlue
+              }
+              title="Matrícula"
+              value={
+                licencia?.matricula || "N/A"
+              }
+            />
+
+            {/* FOLIO */}
+            <LicenseInfoCard
+              icon="bi bi-file-earmark-text-fill"
+              iconStyle={
+                styles.iconBackgroundOrange
+              }
+              title="Folio"
+              value={
+                licencia?.folio || "N/A"
+              }
+            />
+
+            {/* VIGENCIA */}
+            <LicenseInfoCard
+              icon="bi bi-hourglass-split"
+              iconStyle={
+                styles.iconBackgroundPurple
+              }
+              title="Vigencia"
+              value={
+                licencia?.periodo
+                  ? `${licencia.periodo} años`
+                  : "N/A"
+              }
+            />
+          </div>
+
+          {/* FECHAS */}
+          <div style={styles.datesGrid}>
+            <DateCard
+              icon="bi bi-calendar-plus-fill"
+              iconColor="#2563eb"
+              title="Expedición"
+              value={formatearFecha(
+                licencia?.expedida
+              )}
+            />
+
+            <DateCard
+              icon="bi bi-calendar-x-fill"
+              iconColor="#dc2626"
+              title="Vencimiento"
+              value={formatearFecha(
+                licencia?.vencimiento
+              )}
+            />
+
+            <DateCard
+              icon="bi bi-calendar-check-fill"
+              iconColor="#0f766e"
+              title="Antigüedad"
+              value={formatearFecha(
+                licencia?.antiguedad
+              )}
+            />
+          </div>
+        </div>
+
+        {/* ==================================================
+            INFORMACIÓN ADICIONAL
+        =================================================== */}
+        <div style={styles.mainCard}>
+          <SectionHeader
+            icon="bi bi-heart-pulse-fill"
+            title="Información adicional"
+            description="Datos complementarios del ciudadano"
+            iconStyle={styles.sectionIconRed}
+          />
+
+          <div style={styles.additionalGrid}>
+            <AdditionalItem
+              icon="bi bi-droplet-fill"
+              iconColor="#dc2626"
+              title="Tipo sanguíneo"
+              value={
+                datosPersonales.tipoSanguineo ||
+                "N/A"
+              }
+            />
+
+            <AdditionalItem
+              icon="bi bi-calendar-event-fill"
+              iconColor="#7c3aed"
+              title="Fecha de nacimiento"
+              value={formatearFecha(
+                datosPersonales.nacimiento
+              )}
+            />
+
+            <AdditionalItem
+              icon="bi bi-heart-fill"
+              iconColor="#16a34a"
+              title="Donador"
+              value={
+                datosPersonales.donador
+                  ? "Sí"
+                  : "No"
+              }
+            />
+
+            <AdditionalItem
+              icon="bi bi-exclamation-triangle-fill"
+              iconColor="#ea580c"
+              title="Alergias"
+              value={
+                datosPersonales.alergias
+                  ? "Sí"
+                  : "No"
+              }
+            />
+          </div>
+
+          {/* FIRMA */}
+          <div style={styles.signatureContainer}>
+            <div style={styles.signatureHeader}>
+              <div style={styles.signatureIcon}>
+                <i className="bi bi-pen-fill"></i>
+              </div>
+
+              <div>
+                <strong style={styles.signatureTitle}>
+                  Firma del ciudadano
+                </strong>
+
+                <span
+                  style={
+                    styles.signatureDescription
                   }
+                >
+                  Firma asociada al registro
+                </span>
+              </div>
+            </div>
+
+            <div style={styles.signatureBox}>
+              <img
+                src={firma}
+                alt="Firma del ciudadano"
+                style={styles.signature}
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "/firma.png";
                 }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ==================================================
+            VISTA PREVIA PDF
+        =================================================== */}
+        {licencia && (
+          <div style={styles.mainCard}>
+            <div style={styles.pdfHeader}>
+              <SectionHeader
+                icon="bi bi-file-earmark-pdf-fill"
+                title="Vista previa de la licencia"
+                description="Documento generado con la información registrada"
+                iconStyle={
+                  styles.sectionIconPurple
+                }
+              />
+
+              <button
+                type="button"
+                style={styles.printButton}
+                onClick={imprimirLicencia}
               >
-                <i className="bi bi-file-earmark-pdf me-2"></i>
+                <i className="bi bi-printer-fill"></i>
                 Imprimir licencia
               </button>
             </div>
 
+            <div
+              style={
+                styles.pdfViewerContainer
+              }
+            >
+              <LicenciaPreview
+                licencia={licencia}
+              />
+            </div>
           </div>
         )}
-        {/* =====================================
-            BOTÓN NUEVA LICENCIA
-        ====================================== */}
 
-        <div style={styles.newLicenseContainer}>
-  <button
-    type="button"
-    onClick={() => setShowLicencia(false)}
-    style={styles.newLicenseButton}
-  >
-    <i className="bi bi-arrow-left me-2"></i>
-    Nueva licencia
-  </button>
-</div>
-
+        {/* ==================================================
+            BOTONES
+        =================================================== */}
+        <div style={styles.actionsContainer}>
+          <button
+            type="button"
+            onClick={() =>
+              setShowLicencia(false)
+            }
+            style={styles.newLicenseButton}
+          >
+            <i className="bi bi-plus-circle-fill"></i>
+            Registrar otra licencia
+          </button>
+        </div>
       </div>
-
     </div>
   );
 }
 
+// ============================================================
+// COMPONENTES VISUALES
+// ============================================================
 
-/* =====================================================
-   ESTILOS
-===================================================== */
+function SectionHeader({
+  icon,
+  title,
+  description,
+  iconStyle,
+}) {
+  return (
+    <div style={styles.sectionHeader}>
+      <div
+        style={{
+          ...styles.sectionIcon,
+          ...iconStyle,
+        }}
+      >
+        <i className={icon}></i>
+      </div>
+
+      <div>
+        <h3 style={styles.sectionTitle}>
+          {title}
+        </h3>
+
+        <p style={styles.sectionDescription}>
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({
+  icon,
+  iconColor,
+  label,
+  value,
+}) {
+  return (
+    <div style={styles.infoRow}>
+      <div
+        style={{
+          ...styles.infoIcon,
+          color: iconColor,
+        }}
+      >
+        <i className={icon}></i>
+      </div>
+
+      <div>
+        <span style={styles.infoLabel}>
+          {label}
+        </span>
+
+        <strong style={styles.infoValue}>
+          {value}
+        </strong>
+      </div>
+    </div>
+  );
+}
+
+function LicenseInfoCard({
+  icon,
+  iconStyle,
+  title,
+  value,
+}) {
+  return (
+    <div style={styles.licenseInfoCard}>
+      <div
+        style={{
+          ...styles.licenseInfoIcon,
+          ...iconStyle,
+        }}
+      >
+        <i className={icon}></i>
+      </div>
+
+      <div>
+        <span style={styles.smallLabel}>
+          {title}
+        </span>
+
+        <strong style={styles.licenseInfoValue}>
+          {value}
+        </strong>
+      </div>
+    </div>
+  );
+}
+
+function DateCard({
+  icon,
+  iconColor,
+  title,
+  value,
+}) {
+  return (
+    <div style={styles.dateCard}>
+      <i
+        className={icon}
+        style={{
+          ...styles.dateIcon,
+          color: iconColor,
+        }}
+      ></i>
+
+      <div>
+        <span style={styles.smallLabel}>
+          {title}
+        </span>
+
+        <strong style={styles.dateValue}>
+          {value}
+        </strong>
+      </div>
+    </div>
+  );
+}
+
+function AdditionalItem({
+  icon,
+  iconColor,
+  title,
+  value,
+}) {
+  return (
+    <div style={styles.additionalItem}>
+      <div
+        style={{
+          ...styles.additionalIcon,
+          color: iconColor,
+        }}
+      >
+        <i className={icon}></i>
+      </div>
+
+      <div>
+        <span style={styles.smallLabel}>
+          {title}
+        </span>
+
+        <strong style={styles.additionalValue}>
+          {value}
+        </strong>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ESTILOS
+// ============================================================
 
 const styles = {
-
   page: {
     minHeight: "100vh",
-    background: "#f5f5f7",
-    paddingBottom: "50px",
+    background: "#f8f7ff",
+    padding: "30px",
     fontFamily:
-      "'Segoe UI', Arial, sans-serif",
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   },
 
-
-  /* HEADER */
-
-  topHeader: {
-    position: "relative",
-    width: "100%",
-    minHeight: "180px",
-    overflow: "hidden",
+  // ==========================================================
+  // HEADER
+  // ==========================================================
+  header: {
     background:
-      "linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%)",
+      "linear-gradient(135deg, #4c1d95 0%, #7c3aed 55%, #a78bfa 100%)",
+
+    borderRadius: "20px",
+
+    padding: "28px 32px",
+
+    color: "#ffffff",
+
+    marginBottom: "24px",
+
+    boxShadow:
+      "0 12px 30px rgba(76,29,149,0.18)",
   },
-
-
-  headerPattern: {
-    position: "absolute",
-    inset: 0,
-    opacity: 0.08,
-    backgroundImage:
-      "radial-gradient(circle at 20% 20%, #ffffff 2px, transparent 2px)",
-    backgroundSize: "25px 25px",
-  },
-
 
   headerContent: {
-    position: "relative",
-    zIndex: 2,
-    maxWidth: "950px",
-    margin: "0 auto",
-    padding: "30px 25px",
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
-    gap: "22px",
+    gap: "18px",
   },
 
+  headerIcon: {
+    width: "58px",
+    height: "58px",
+    minWidth: "58px",
 
-  logoContainer: {
+    borderRadius: "16px",
+
+    background:
+      "rgba(255,255,255,0.18)",
+
+    border:
+      "1px solid rgba(255,255,255,0.20)",
+
     display: "flex",
+
     alignItems: "center",
+
     justifyContent: "center",
+
+    fontSize: "27px",
   },
 
-
-  logoCircle: {
-    width: "75px",
-    height: "75px",
-    borderRadius: "50%",
-    border: "3px solid rgba(255,255,255,0.9)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#fff",
-    fontSize: "2.3rem",
-  },
-
-
-  headerText: {
-    color: "#fff",
-    textAlign: "left",
-  },
-
-
-  institution: {
-    fontSize: "1.55rem",
+  title: {
+    margin: 0,
+    fontSize: "28px",
     fontWeight: "700",
-    lineHeight: "1.15",
-    letterSpacing: "1px",
   },
 
-
-  licenseTitle: {
-    marginTop: "12px",
-    fontSize: "1.2rem",
-    fontWeight: "600",
-    letterSpacing: "2px",
+  subtitle: {
+    margin: "6px 0 0",
+    fontSize: "14px",
+    opacity: 0.85,
   },
 
-
-  /* CONTENT */
-
+  // ==========================================================
+  // CONTENT
+  // ==========================================================
   content: {
     width: "100%",
-    maxWidth: "950px",
-    margin: "-25px auto 0",
-    position: "relative",
-    zIndex: 5,
-    padding: "0 20px",
   },
 
-
-  /* LICENSE CARD */
-
-  licenseCard: {
+  mainCard: {
     background: "#ffffff",
-    minHeight: "450px",
-    padding: "30px",
-    borderRadius: "8px",
+
+    borderRadius: "20px",
+
+    border: "1px solid #eeeaff",
+
     boxShadow:
-      "0 8px 25px rgba(0,0,0,0.12)",
-    position: "relative",
-    overflow: "hidden",
+      "0 8px 30px rgba(30,27,75,0.07)",
+
+    padding: "28px",
+
+    marginBottom: "24px",
   },
 
+  // ==========================================================
+  // SECTION HEADER
+  // ==========================================================
+  sectionHeader: {
+    display: "flex",
+
+    alignItems: "center",
+
+    gap: "12px",
+
+    paddingBottom: "15px",
+
+    marginBottom: "22px",
+
+    borderBottom:
+      "1px solid #f1f5f9",
+  },
+
+  sectionIcon: {
+    width: "42px",
+
+    height: "42px",
+
+    minWidth: "42px",
+
+    borderRadius: "12px",
+
+    display: "flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    fontSize: "18px",
+  },
+
+  sectionIconBlue: {
+    background: "#dbeafe",
+    color: "#2563eb",
+  },
+
+  sectionIconGreen: {
+    background: "#dcfce7",
+    color: "#16a34a",
+  },
+
+  sectionIconRed: {
+    background: "#fee2e2",
+    color: "#dc2626",
+  },
+
+  sectionIconPurple: {
+    background: "#ede9fe",
+    color: "#7c3aed",
+  },
+
+  sectionTitle: {
+    margin: 0,
+
+    color: "#312e81",
+
+    fontSize: "16px",
+
+    fontWeight: "700",
+  },
+
+  sectionDescription: {
+    margin: "3px 0 0",
+
+    color: "#94a3b8",
+
+    fontSize: "12px",
+  },
+
+  // ==========================================================
+  // PERFIL
+  // ==========================================================
+  profileContainer: {
+    display: "flex",
+
+    gap: "28px",
+
+    alignItems: "flex-start",
+
+    flexWrap: "wrap",
+  },
 
   photoContainer: {
-    float: "left",
-    marginRight: "30px",
-    marginBottom: "20px",
+    width: "160px",
   },
-
 
   photo: {
-    width: "145px",
-    height: "180px",
+    width: "160px",
+
+    height: "195px",
+
     objectFit: "cover",
-    borderRadius: "4px",
-    border: "1px solid #ddd",
+
+    borderRadius: "14px",
+
+    border: "1px solid #e2e8f0",
+
     background: "#f1f5f9",
+
+    boxShadow:
+      "0 4px 14px rgba(15,23,42,0.08)",
   },
 
+  profileInformation: {
+    flex: 1,
 
-  mainInformation: {
-    paddingTop: "5px",
+    display: "grid",
+
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(240px,1fr))",
+
+    gap: "18px",
+
+    minWidth: "280px",
   },
 
-
-  dataRow: {
+  infoRow: {
     display: "flex",
-    flexWrap: "wrap",
-    gap: "8px",
-    marginBottom: "18px",
-    fontSize: "1rem",
-  },
 
-
-  label: {
-    color: "#222",
-    fontWeight: "600",
-    minWidth: "115px",
-  },
-
-
-  value: {
-    color: "#111",
-    fontWeight: "400",
-  },
-
-
-  datesContainer: {
-    clear: "both",
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "45px",
-    marginTop: "25px",
-    paddingTop: "20px",
-    borderTop: "1px solid #eeeeee",
-  },
-
-
-  dateBox: {
-    display: "flex",
-    gap: "8px",
     alignItems: "center",
+
+    gap: "12px",
+
+    padding: "14px",
+
+    border: "1px solid #e2e8f0",
+
+    borderRadius: "12px",
+
+    background: "#fafafa",
   },
 
+  infoIcon: {
+    width: "38px",
 
-  dateLabel: {
-    fontWeight: "600",
-    color: "#222",
-  },
+    height: "38px",
 
+    minWidth: "38px",
 
-  dateValue: {
-    color: "#333",
-  },
+    borderRadius: "10px",
 
-
-  validity: {
-    marginTop: "25px",
     display: "flex",
+
     alignItems: "center",
-    gap: "10px",
+
+    justifyContent: "center",
+
+    background: "#ffffff",
+
+    fontSize: "17px",
+
+    border: "1px solid #e2e8f0",
   },
 
+  infoLabel: {
+    display: "block",
 
-  validityLabel: {
-    fontSize: "1.05rem",
-    fontWeight: "600",
+    color: "#94a3b8",
+
+    fontSize: "10px",
+
+    textTransform: "uppercase",
+
+    marginBottom: "3px",
   },
 
+  infoValue: {
+    display: "block",
 
-  validityValue: {
-    fontSize: "1.05rem",
+    color: "#334155",
+
+    fontSize: "13px",
   },
 
+  // ==========================================================
+  // LICENCIA
+  // ==========================================================
+  licenseGrid: {
+    display: "grid",
 
-  /* TIPO */
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(210px,1fr))",
 
-  licenseType: {
-    marginTop: "25px",
-    display: "flex",
-    alignItems: "center",
     gap: "15px",
   },
 
+  typeCard: {
+    display: "flex",
+
+    alignItems: "center",
+
+    gap: "13px",
+
+    padding: "16px",
+
+    border: "1px solid #ddd6fe",
+
+    borderRadius: "13px",
+
+    background: "#faf9ff",
+  },
 
   typeCircle: {
-    width: "62px",
-    height: "62px",
+    width: "52px",
+
+    height: "52px",
+
+    minWidth: "52px",
+
     borderRadius: "50%",
+
     background:
       "linear-gradient(135deg, #4c1d95, #7c3aed)",
-    color: "#fff",
+
+    color: "#ffffff",
+
     display: "flex",
+
     alignItems: "center",
+
     justifyContent: "center",
-    fontSize: "1.5rem",
+
+    fontSize: "20px",
+
     fontWeight: "800",
-    boxShadow:
-      "0 4px 12px rgba(124,58,237,0.25)",
   },
-
-
-  typeInformation: {
-    display: "flex",
-    flexDirection: "column",
-  },
-
-
-  typeTitle: {
-    fontSize: "0.8rem",
-    color: "#777",
-  },
-
 
   typeName: {
-    fontSize: "1rem",
-    fontWeight: "600",
-    color: "#222",
+    display: "block",
+
+    color: "#312e81",
+
+    fontSize: "14px",
+
+    marginTop: "3px",
   },
 
-
-  /* MATRICULA */
-
-  matricula: {
-    marginTop: "25px",
-    paddingTop: "18px",
-    borderTop: "1px solid #eeeeee",
+  licenseInfoCard: {
     display: "flex",
-    gap: "10px",
-  },
 
-
-  matriculaLabel: {
-    fontWeight: "600",
-  },
-
-
-  matriculaValue: {
-    fontWeight: "700",
-    letterSpacing: "1px",
-  },
-
-
-  /* FOLIO */
-
-  folio: {
-    marginTop: "12px",
-    display: "flex",
-    gap: "10px",
-    fontSize: "0.9rem",
-    color: "#666",
-  },
-
-
-  /* ADDITIONAL */
-
-  additionalCard: {
-    marginTop: "25px",
-    background: "#fff",
-    borderRadius: "8px",
-    padding: "25px",
-    boxShadow:
-      "0 5px 18px rgba(0,0,0,0.08)",
-  },
-
-
-  sectionTitle: {
-    display: "flex",
     alignItems: "center",
-    gap: "10px",
-    color: "#4c1d95",
-    fontSize: "1.1rem",
-    fontWeight: "700",
-    paddingBottom: "15px",
-    borderBottom: "1px solid #eeeeee",
+
+    gap: "12px",
+
+    padding: "16px",
+
+    border: "1px solid #e2e8f0",
+
+    borderRadius: "13px",
+
+    background: "#ffffff",
   },
 
+  licenseInfoIcon: {
+    width: "42px",
 
+    height: "42px",
+
+    minWidth: "42px",
+
+    borderRadius: "11px",
+
+    display: "flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    fontSize: "17px",
+  },
+
+  iconBackgroundBlue: {
+    background: "#dbeafe",
+    color: "#2563eb",
+  },
+
+  iconBackgroundOrange: {
+    background: "#ffedd5",
+    color: "#ea580c",
+  },
+
+  iconBackgroundPurple: {
+    background: "#ede9fe",
+    color: "#7c3aed",
+  },
+
+  smallLabel: {
+    display: "block",
+
+    color: "#94a3b8",
+
+    fontSize: "10px",
+
+    textTransform: "uppercase",
+
+    marginBottom: "3px",
+  },
+
+  licenseInfoValue: {
+    display: "block",
+
+    color: "#334155",
+
+    fontSize: "14px",
+  },
+
+  datesGrid: {
+    display: "grid",
+
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(210px,1fr))",
+
+    gap: "15px",
+
+    marginTop: "22px",
+
+    paddingTop: "22px",
+
+    borderTop: "1px solid #f1f5f9",
+  },
+
+  dateCard: {
+    display: "flex",
+
+    alignItems: "center",
+
+    gap: "11px",
+
+    padding: "13px",
+
+    background: "#f8fafc",
+
+    borderRadius: "11px",
+  },
+
+  dateIcon: {
+    fontSize: "20px",
+  },
+
+  dateValue: {
+    display: "block",
+
+    color: "#334155",
+
+    fontSize: "13px",
+  },
+
+  // ==========================================================
+  // ADICIONAL
+  // ==========================================================
   additionalGrid: {
     display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "20px",
-    marginTop: "20px",
-  },
 
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(220px,1fr))",
+
+    gap: "15px",
+  },
 
   additionalItem: {
     display: "flex",
-    flexDirection: "column",
-    gap: "5px",
+
+    alignItems: "center",
+
+    gap: "12px",
+
+    padding: "14px",
+
+    border: "1px solid #e2e8f0",
+
+    borderRadius: "12px",
+
+    background: "#fafafa",
   },
 
+  additionalIcon: {
+    width: "40px",
 
-  /* FIRMA */
+    height: "40px",
 
+    minWidth: "40px",
+
+    borderRadius: "10px",
+
+    background: "#ffffff",
+
+    display: "flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    fontSize: "17px",
+
+    border: "1px solid #e2e8f0",
+  },
+
+  additionalValue: {
+    display: "block",
+
+    color: "#334155",
+
+    fontSize: "13px",
+  },
+
+  // ==========================================================
+  // FIRMA
+  // ==========================================================
   signatureContainer: {
     marginTop: "25px",
-    paddingTop: "20px",
-    borderTop: "1px solid #eeeeee",
+
+    paddingTop: "22px",
+
+    borderTop: "1px solid #f1f5f9",
+  },
+
+  signatureHeader: {
     display: "flex",
-    flexDirection: "column",
+
     alignItems: "center",
-  },
 
+    gap: "12px",
 
-  signatureLabel: {
-    fontSize: "0.85rem",
-    color: "#777",
-  },
-
-
-  signature: {
-    width: "190px",
-    height: "70px",
-    objectFit: "contain",
-    marginTop: "5px",
-  },
-
-
-  /* RECUADRO NEGRO */
-
-  blackBox: {
-    marginTop: "25px",
-    minHeight: "150px",
-    background: "#111111",
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-
-  blackBoxContent: {
-    color: "#fff",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "8px",
-    opacity: 0.8,
-  },
-
-
-  /* PDF */
-
-  pdfSection: {
-    marginTop: "30px",
-    background: "#fff",
-    borderRadius: "8px",
-    padding: "25px",
-    boxShadow:
-      "0 5px 18px rgba(0,0,0,0.08)",
-  },
-
-
-  pdfHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "20px",
-  },
-
-
-  pdfTitle: {
-    margin: 0,
-    color: "#334155",
-    fontWeight: "700",
-  },
-
-
-  pdfDescription: {
-    margin: "5px 0 0",
-    color: "#64748b",
-    fontSize: "0.9rem",
-  },
-
-
-  pdfViewerContainer: {
-    width: "100%",
-    overflow: "hidden",
-    borderRadius: "6px",
-    border: "1px solid #ddd",
-  },
-
-
-  pdfViewer: {
-    width: "100%",
-    height: "550px",
-    border: "none",
-  },
-
-
-  pdfButtons: {
-    marginTop: "15px",
-    textAlign: "right",
-  },
-
-
-  pdfButton: {
-    display: "inline-flex",
-    alignItems: "center",
-    padding: "11px 20px",
-    background:
-      "linear-gradient(135deg, #4c1d95, #7c3aed)",
-    color: "#fff",
-    borderRadius: "8px",
-    textDecoration: "none",
-    fontWeight: "600",
-    boxShadow:
-      "0 4px 12px rgba(124,58,237,0.2)",
-  },
-
-
-  /* NUEVA LICENCIA */
-
-  newLicenseContainer: {
-    marginTop: "30px",
-    textAlign: "center",
-  },
-
-
-  newLicenseButton: {
-    border: "none",
-    padding: "12px 28px",
-    borderRadius: "9px",
-    background: "#fff",
-    color: "#6d28d9",
-    border: "1px solid #ddd6fe",
-    fontWeight: "600",
-    cursor: "pointer",
-    boxShadow:
-      "0 4px 12px rgba(0,0,0,0.06)",
-  },
-
-
-  /* LOADING */
-
-  loadingContainer: {
-    minHeight: "500px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-
-  spinner: {
-    color: "#7c3aed",
-    width: "3rem",
-    height: "3rem",
-  },
-
-
-  loadingText: {
-    marginTop: "15px",
-    color: "#64748b",
-  },
-
-
-  /* ERROR */
-
-  errorContainer: {
-    minHeight: "500px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#475569",
-  },
-
-
-  errorIcon: {
-    fontSize: "3rem",
-    color: "#dc2626",
     marginBottom: "15px",
   },
 
+  signatureIcon: {
+    width: "40px",
+
+    height: "40px",
+
+    borderRadius: "11px",
+
+    background: "#ede9fe",
+
+    color: "#7c3aed",
+
+    display: "flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+  },
+
+  signatureTitle: {
+    display: "block",
+
+    color: "#312e81",
+
+    fontSize: "13px",
+  },
+
+  signatureDescription: {
+    display: "block",
+
+    color: "#94a3b8",
+
+    fontSize: "11px",
+
+    marginTop: "2px",
+  },
+
+  signatureBox: {
+    minHeight: "100px",
+
+    display: "flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    background: "#fafafa",
+
+    border: "1px dashed #cbd5e1",
+
+    borderRadius: "12px",
+  },
+
+  signature: {
+    width: "210px",
+
+    height: "80px",
+
+    objectFit: "contain",
+  },
+
+  // ==========================================================
+  // PDF
+  // ==========================================================
+  pdfHeader: {
+    display: "flex",
+
+    justifyContent: "space-between",
+
+    alignItems: "flex-start",
+
+    gap: "20px",
+
+    flexWrap: "wrap",
+  },
+
+  pdfViewerContainer: {
+    width: "100%",
+
+    overflow: "hidden",
+
+    borderRadius: "12px",
+
+    border: "1px solid #e2e8f0",
+
+    background: "#f8fafc",
+  },
+
+  printButton: {
+    border: "none",
+
+    minHeight: "43px",
+
+    padding: "0 17px",
+
+    borderRadius: "10px",
+
+    background: "#dc2626",
+
+    color: "#ffffff",
+
+    cursor: "pointer",
+
+    display: "inline-flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    gap: "8px",
+
+    fontSize: "12px",
+
+    fontWeight: "600",
+
+    boxShadow:
+      "0 4px 12px rgba(220,38,38,0.18)",
+  },
+
+  // ==========================================================
+  // ACCIONES
+  // ==========================================================
+  actionsContainer: {
+    display: "flex",
+
+    justifyContent: "center",
+
+    paddingBottom: "20px",
+  },
+
+  newLicenseButton: {
+    minWidth: "220px",
+
+    height: "46px",
+
+    border: "none",
+
+    borderRadius: "11px",
+
+    background: "#16a34a",
+
+    color: "#ffffff",
+
+    cursor: "pointer",
+
+    fontSize: "13px",
+
+    fontWeight: "600",
+
+    display: "inline-flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    gap: "8px",
+
+    boxShadow:
+      "0 5px 15px rgba(22,163,74,0.20)",
+  },
+
+  backButton: {
+    marginTop: "10px",
+
+    border: "none",
+
+    padding: "10px 18px",
+
+    borderRadius: "10px",
+
+    background: "#7c3aed",
+
+    color: "#ffffff",
+
+    cursor: "pointer",
+
+    display: "inline-flex",
+
+    alignItems: "center",
+
+    gap: "8px",
+  },
+
+  // ==========================================================
+  // LOADING
+  // ==========================================================
+  loadingContainer: {
+    minHeight: "500px",
+
+    background: "#ffffff",
+
+    borderRadius: "20px",
+
+    display: "flex",
+
+    flexDirection: "column",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    boxShadow:
+      "0 8px 30px rgba(30,27,75,0.07)",
+  },
+
+  spinner: {
+    color: "#7c3aed",
+
+    width: "3rem",
+
+    height: "3rem",
+  },
+
+  loadingTitle: {
+    margin: "18px 0 5px",
+
+    color: "#312e81",
+
+    fontSize: "18px",
+  },
+
+  loadingText: {
+    margin: 0,
+
+    color: "#94a3b8",
+
+    fontSize: "13px",
+  },
+
+  // ==========================================================
+  // ERROR
+  // ==========================================================
+  errorContainer: {
+    minHeight: "500px",
+
+    background: "#ffffff",
+
+    borderRadius: "20px",
+
+    display: "flex",
+
+    flexDirection: "column",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    textAlign: "center",
+
+    padding: "30px",
+
+    boxShadow:
+      "0 8px 30px rgba(30,27,75,0.07)",
+  },
+
+  errorIconContainer: {
+    width: "65px",
+
+    height: "65px",
+
+    borderRadius: "18px",
+
+    background: "#fee2e2",
+
+    color: "#dc2626",
+
+    display: "flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    fontSize: "28px",
+
+    marginBottom: "15px",
+  },
+
+  errorTitle: {
+    margin: 0,
+
+    color: "#334155",
+
+    fontSize: "18px",
+  },
+
+  errorText: {
+    color: "#94a3b8",
+
+    fontSize: "13px",
+
+    margin: "7px 0 15px",
+  },
 };
 
 export default LicenciaPage;
