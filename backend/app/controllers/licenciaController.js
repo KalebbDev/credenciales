@@ -391,12 +391,9 @@ exports.generarLicenciaPDF = async (req, res) => {
     // FRANJA DORADA + VERDE
     // =====================================================
 
-// Fondo morado
-    doc
-
     // Línea dorada
     const lineaY = mm(14); // justo debajo del fondo morado
-    const lineaH = mm(1);  // altura de 1mm
+    const lineaH = mm(.8);  // altura de 1mm
     const lineaDoradaW = mm(65);
 
     doc
@@ -405,21 +402,11 @@ exports.generarLicenciaPDF = async (req, res) => {
 
     // Línea verde
     const lineaVerdeX = lineaDoradaW;
-    const lineaVerdeW = W - lineaDoradaW;
+    const lineaVerdeW = mm(86) - lineaDoradaW; // ancho total (85.6mm) - dorada
 
     doc
       .rect(lineaVerdeX, lineaY, lineaVerdeW, lineaH)
-      .fill("#006400"); // verde institucional
-
-
-    doc
-      .rect(
-        lineaVerdeX,
-        lineaY,
-        lineaVerdeW,
-        lineaH
-      )
-      .fill("#719B68");
+      .fill("#78df61"); // verde institucional
 
 
     // Línea fina inferior
@@ -723,7 +710,7 @@ exports.generarLicenciaPDF = async (req, res) => {
     if (rutaFoto) {
       try {
         doc.save();              // guardar estado actual
-        doc.opacity(0.18);       // aplicar transparencia
+        doc.opacity(0.3);       // aplicar transparencia
 
         doc.image(
           rutaFoto,
@@ -774,70 +761,38 @@ exports.generarLicenciaPDF = async (req, res) => {
 
     doc
       .rect(
-        213,
-        0,
-        29.65,
-        H
+        mm(70.5), // comienza justo donde termina la línea vertical
+        0,        // desde arriba
+        mm(15.1), // ancho sobrante
+        H         // todo el alto
       )
-      .fill("#D9DDDC");
+      .fill("#D9DDDC"); // color gris claro institucional
 
     // Línea divisoria
 
     doc
-      .moveTo(213, 0)
-      .lineTo(213, H)
-      .lineWidth(0.8)
-      .stroke("#B8BCBB");
+      .moveTo(mm(70.5), 0)   // posición X inicial en mm, Y=0 (arriba)
+      .lineTo(mm(70.5), H)   // misma X, hasta el alto total H
+      .lineWidth(mm(0.4))    // grosor de 0.4mm
+      .stroke("#B8BCBB");    // color gris institucional
+
 
     // =====================================================
     // FOLIO DEL REVERSO
     // =====================================================
-
     doc
       .font("Helvetica-Bold")
-      .fontSize(6.5)
+      .fontSize(6)          // ajustado para que encaje en ~1.7mm de alto
       .fillColor("#666666")
       .text(
         licencia.folio || "",
-        216,
-        8,
+        mm(74),                // posición X en mm
+        mm(3),                 // posición Y en mm
         {
-          width: 23,
-          align: "center"
+          //width: mm(11),       // ancho aproximado en mm (ajusta según espacio disponible)
+          //align: "center"
         }
       );
-
-    // =====================================================
-    // AVISO DE PROTOTIPO
-    // =====================================================
-
-    dibujarTexto(
-      doc,
-      "DOCUMENTO DE EJEMPLO",
-      15,
-      8,
-      {
-        font: "Helvetica-Bold",
-        size: 5,
-        color: "#A52A2A",
-        width: 180,
-        align: "center"
-      }
-    );
-
-    dibujarTexto(
-      doc,
-      "SIN VALIDEZ OFICIAL",
-      15,
-      15,
-      {
-        font: "Helvetica-Bold",
-        size: 5,
-        color: "#A52A2A",
-        width: 180,
-        align: "center"
-      }
-    );
 
     // =====================================================
     // COLUMNA IZQUIERDA
@@ -847,27 +802,41 @@ exports.generarLicenciaPDF = async (req, res) => {
     // DONADOR
     // -----------------------------------------------------
 
+    doc.image(
+      path.join(__dirname, "../utils/tlax.png"),
+      mm(6),
+      mm(6),
+      {
+        fit: [mm(17), mm(17)], // ajusta dentro de 17×17 mm
+        align: "center",
+        valign: "center"
+      }
+    );
+
+
     dibujarTexto(
       doc,
       "DONADOR:",
-      15,
-      30,
+      mm(5),     // posición X en mm
+      mm(27),    // posición Y en mm
       {
         font: "Helvetica-Bold",
-        size: 7,
-        width: 75
+        size: 6,          // ajustado para que encaje en ~1.7mm de alto
+        color: "#111111",
+        //width: mm(20),    // ancho aproximado en mm (ajusta según espacio disponible)
+        //height: mm(1.7)   // alto en mm
       }
     );
 
     dibujarTexto(
       doc,
       datos.donador ? "SI" : "NO",
-      15,
-      40,
+      mm(5),     // posición X en mm
+      mm(28.8),    // posición Y en mm
       {
         font: "Helvetica-Bold",
-        size: 7,
-        width: 75
+        size: 6,
+       // width: 75
       }
     );
 
@@ -878,12 +847,12 @@ exports.generarLicenciaPDF = async (req, res) => {
     dibujarTexto(
       doc,
       "ALERGIAS:",
-      15,
-      53,
+      mm(5),     // posición X en mm
+      mm(33),    // posición Y en mm
       {
         font: "Helvetica-Bold",
-        size: 7,
-        width: 75
+        size: 6,
+        //width: 75
       }
     );
 
@@ -894,18 +863,18 @@ exports.generarLicenciaPDF = async (req, res) => {
       alergias === "false" ||
       !alergias
     ) {
-      alergias = "NO";
+      alergias = "NINGUNA";
     }
 
     dibujarTexto(
       doc,
       String(alergias).toUpperCase(),
-      15,
-      63,
+      mm(5),     // posición X en mm
+      mm(35),    // posición Y en mm
       {
         font: "Helvetica-Bold",
-        size: 7,
-        width: 75
+        size: 6,
+        //width: 75
       }
     );
 
@@ -920,24 +889,24 @@ exports.generarLicenciaPDF = async (req, res) => {
     dibujarTexto(
       doc,
       "TIPO SANGUÍNEO:",
-      120,
-      30,
+      mm(27),
+      mm(5),
       {
         font: "Helvetica-Bold",
-        size: 7,
-        width: 80
+        size: 6,
+        //width: 80
       }
     );
 
     dibujarTexto(
       doc,
       datos.tipoSanguineo,
-      120,
-      40,
+      mm(27),
+      mm(7),
       {
         font: "Helvetica-Bold",
         size: 7,
-        width: 70
+        //width: 70
       }
     );
 
@@ -948,24 +917,24 @@ exports.generarLicenciaPDF = async (req, res) => {
     dibujarTexto(
       doc,
       "TELÉFONO:",
-      120,
-      53,
+      mm(27),
+      mm(11),
       {
         font: "Helvetica-Bold",
-        size: 7,
-        width: 70
+        size: 6,
+        //width: 70
       }
     );
 
     dibujarTexto(
       doc,
       datos.telefono,
-      120,
-      63,
+      mm(27),
+      mm(13),
       {
         font: "Helvetica-Bold",
         size: 7,
-        width: 75
+        //width: 75
       }
     );
 
@@ -976,24 +945,24 @@ exports.generarLicenciaPDF = async (req, res) => {
     dibujarTexto(
       doc,
       "NACIMIENTO:",
-      120,
-      76,
+      mm(52),
+      mm(5),
       {
         font: "Helvetica-Bold",
-        size: 7,
-        width: 75
+        size: 6,
+        //width: 75
       }
     );
 
     dibujarTexto(
       doc,
       nacimiento,
-      120,
-      86,
+      mm(52),
+      mm(7),
       {
         font: "Helvetica-Bold",
         size: 7,
-        width: 75
+        //width: 75
       }
     );
 
@@ -1004,24 +973,24 @@ exports.generarLicenciaPDF = async (req, res) => {
     dibujarTexto(
       doc,
       "ANTIGÜEDAD:",
-      120,
-      99,
+      mm(52),
+      mm(11),
       {
         font: "Helvetica-Bold",
-        size: 7,
-        width: 75
+        size: 6,
+        //width: 75
       }
     );
 
     dibujarTexto(
       doc,
       antiguedad,
-      120,
-      109,
+      mm(52),
+      mm(13),
       {
         font: "Helvetica-Bold",
         size: 7,
-        width: 75
+        //width: 75
       }
     );
 
@@ -1037,16 +1006,16 @@ exports.generarLicenciaPDF = async (req, res) => {
 
       try {
 
-        doc.image(
-          rutaFirma,
-          72,
-          94,
-          {
-            fit: [45, 25],
-            align: "center",
-            valign: "center"
-          }
-        );
+      doc.image(
+            rutaFirma,
+            mm(47),              // posición X en mm
+            mm(12),              // posición Y en mm
+            {
+              fit: [mm(20), mm(12)], // ancho flexible, alto máximo 12mm
+              align: "center",
+              valign: "center"
+            }
+          );
 
       } catch (error) {
 
@@ -1059,22 +1028,16 @@ exports.generarLicenciaPDF = async (req, res) => {
 
     // Línea de firma
 
-    doc
-      .moveTo(65, 121)
-      .lineTo(125, 121)
-      .lineWidth(0.6)
-      .stroke("#222222");
-
     dibujarTexto(
       doc,
       "FIRMA DEL TITULAR",
-      65,
-      123,
+      mm(46),
+      mm(28),
       {
         font: "Helvetica-Bold",
-        size: 5.5,
-        width: 60,
-        align: "center"
+        size:6,
+        //width: 60,
+        //align: "center"
       }
     );
 
@@ -1082,68 +1045,73 @@ exports.generarLicenciaPDF = async (req, res) => {
     // ESPACIO PARA RESPONSABLE
     // =====================================================
 
-    /*
-     * Estos datos todavía no existen en el JSON.
-     * Por eso dejamos el espacio reservado.
-     */
-
-    doc
-      .moveTo(15, 112)
-      .lineTo(58, 112)
-      .lineWidth(0.6)
-      .stroke("#222222");
-
     dibujarTexto(
       doc,
-      "NOMBRE / CARGO",
-      15,
-      114,
+      "Lic. Marco Tulio Munive Temoltzin",
+      mm(22),
+      mm(35),
       {
         font: "Helvetica-Bold",
-        size: 5,
-        width: 43,
-        align: "center"
+        size: 7,
+       // width: 43,
+        //align: "center"
       }
     );
 
-    // =====================================================
-    // SEGUNDO RESPONSABLE
-    // =====================================================
-
-    doc
-      .moveTo(15, 132)
-      .lineTo(58, 132)
-      .lineWidth(0.6)
-      .stroke("#222222");
-
     dibujarTexto(
       doc,
-      "FIRMA / RESPONSABLE",
-      15,
-      134,
+      "SECRETARIO DE",
+      mm(28),
+      mm(37),
       {
         font: "Helvetica-Bold",
-        size: 5,
-        width: 43,
-        align: "center"
+        size: 7,
+       // width: 43,
+        //align: "center"
       }
     );
 
+    dibujarTexto(
+      doc,
+      "MOVILIDAD Y TRANSPORTE",
+      mm(24),
+      mm(39),
+      {
+        font: "Helvetica-Bold",
+        size: 7,
+       // width: 43,
+        //align: "center"
+      }
+    );
     // =====================================================
     // TEXTO INFERIOR
     // =====================================================
 
     dibujarTexto(
       doc,
-      "DOCUMENTO DE PRUEBA PARA EL SISTEMA DE LICENCIAS",
-      65,
-      140,
+      "ESTA LICENCIA DEBERÁ CANJEARSE ANTES DEL VENCIMIENTO Y A MÁS TARDAR",
+      mm(5),
+      mm(49),
       {
         font: "Helvetica-Bold",
-        size: 4.5,
+        size: 4.3,
         color: "#555555",
-        width: 140,
-        align: "center"
+        //width: 140,
+        //align: "center"
+      }
+    );
+
+        dibujarTexto(
+      doc,
+      "28 DÍAS POSTERIORES AL MISMO PARA CONSERVAR SU ANTIGUEDAD",
+      mm(9),
+      mm(50.3),
+      {
+        font: "Helvetica-Bold",
+        size: 4.3,
+        color: "#555555",
+        //width: 140,
+        //align: "center"
       }
     );
 
