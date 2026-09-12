@@ -250,7 +250,7 @@ exports.generarLicenciaPDF = async (req, res) => {
     const escudoH = mm(11);
 
     doc.image(
-      path.join(__dirname, "../utils/eum.png"),
+      path.join(__dirname, "../utils/escudoBlanco.png"),
       escudoX,
       escudoY,
       {
@@ -267,11 +267,11 @@ exports.generarLicenciaPDF = async (req, res) => {
 
     const mandalaX = mm(27);
     const mandalaY = mm(3);
-    const mandalaW = mm(4);
-    const mandalaH = mm(4);
+    const mandalaW = mm(4.5);
+    const mandalaH = mm(4.5);
 
     doc.image(
-      path.join(__dirname, "../utils/mandalas.png"),
+      path.join(__dirname, "../utils/mandalaBlanca.png"),
       mandalaX,
       mandalaY,
       {
@@ -293,7 +293,7 @@ exports.generarLicenciaPDF = async (req, res) => {
     const logoTlaxH = mm(7);
 
     doc.image(
-      path.join(__dirname, "../utils/tlax.png"),
+      path.join(__dirname, "../utils/mandalaColor.png"),
       logoTlaxX,
       logoTlaxY,
       {
@@ -393,7 +393,7 @@ exports.generarLicenciaPDF = async (req, res) => {
 
     // Línea dorada
     const lineaY = mm(14); // justo debajo del fondo morado
-    const lineaH = mm(.8);  // altura de 1mm
+    const lineaH = mm(.5);  // altura de 1mm
     const lineaDoradaW = mm(65);
 
     doc
@@ -421,17 +421,7 @@ exports.generarLicenciaPDF = async (req, res) => {
       )
       .lineWidth(0.35)
       .stroke("#D0D0D0");
-
-
-    // =====================================================
-    // MARCA DE PROTOTIPO
-    // =====================================================
-
-
-
     doc.opacity(1);
-
-
     // =====================================================
     // AQUÍ CONTINÚA TU FOTO PRINCIPAL
     // =====================================================
@@ -466,6 +456,24 @@ exports.generarLicenciaPDF = async (req, res) => {
       // marco gris si no hay foto
       doc.rect(fotoX, fotoY, fotoW, fotoH).stroke("#888888");
     }
+
+
+    //Mandala dorada
+    const logoTlaxXD = mm(3.5);
+    const logoTlaxYD = mm(42);
+    const logoTlaxWD = mm(9);
+    const logoTlaxHD = mm(9);
+
+    doc.image(
+      path.join(__dirname, "../utils/mandalaDorada.png"),
+      logoTlaxXD,
+      logoTlaxYD,
+      {
+        fit: [logoTlaxWD, logoTlaxHD],
+        align: "center",
+        valign: "center"
+      }
+    );
 
     // =====================================================
     // NOMBRE

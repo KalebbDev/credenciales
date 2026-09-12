@@ -481,7 +481,7 @@ function LicenciaForm({ ciudadanoId, setShowLicencia }) {
                     Seleccione nombre de licencia
                   </option>
 
-                  <option value="CHOFER">CHOFER</option>
+                  <option value="CHOFER">CHOFER PARTICULAR</option>
                   <option value="AUTOMOVILISTA">AUTOMOVILISTA</option>
                   <option value="MOTOCICLISTA">MOTOCICLISTA</option>
                 
