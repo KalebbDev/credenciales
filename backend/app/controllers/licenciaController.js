@@ -673,7 +673,7 @@ exports.generarLicenciaPDF = async (req, res) => {
 
     dibujarTexto(
       doc,
-      licencia.folio,
+      licencia.matricula,
       mm(62),   // posición X en mm
       mm(41),   // posición Y en mm
       {

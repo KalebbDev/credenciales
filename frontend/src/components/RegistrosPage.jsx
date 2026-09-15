@@ -6,6 +6,7 @@ import LicenciaPage from "./LicenciaPage";
 import DatosPersonalesForm from "./DatosPersonalesForm";
 
 function RegistrosPage() {
+  const [usuario, setUsuario] = useState(null);
   const [ciudadanos, setCiudadanos] = useState([]);
   const [search, setSearch] = useState("");
 
@@ -767,21 +768,21 @@ function RegistrosPage() {
                               </button>
 
                               {/* ELIMINAR */}
-                              <button
-                                type="button"
-                                style={{
-                                  ...styles.actionButton,
-                                  ...styles.deleteButton,
-                                }}
-                                onClick={() =>
-                                  eliminarCiudadano(
-                                    c
-                                  )
-                                }
-                                title="Eliminar ciudadano"
-                              >
-                                <i className="bi bi-trash3-fill"></i>
-                              </button>
+                                <button
+                                  type="button"
+                                  style={{
+                                    ...styles.actionButton,
+                                    ...styles.deleteButton,
+                                  }}
+                                  onClick={() =>
+                                    eliminarCiudadano(
+                                      c
+                                    )
+                                  }
+                                  title="Eliminar ciudadano"
+                                >
+                                  <i className="bi bi-trash3-fill"></i>
+                                </button>
                             </div>
                           </td>
                         </tr>
