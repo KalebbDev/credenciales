@@ -486,7 +486,7 @@ exports.generarLicenciaPDF = async (req, res) => {
       mm(16),   // posición Y en mm
       {
         font: "Helvetica-Bold",
-        size: 8.2,          // ajustado para que encaje en 2mm de alto
+        size: 7.5,          // ajustado para que encaje en 2mm de alto
         color: "#111111",
         width: mm(30),      // ancho aproximado en mm (ajusta según el espacio disponible)
         //height: mm(2)       // alto en mm
@@ -1017,7 +1017,7 @@ exports.generarLicenciaPDF = async (req, res) => {
       doc.image(
             rutaFirma,
             mm(47),              // posición X en mm
-            mm(12),              // posición Y en mm
+            mm(15.5),              // posición Y en mm
             {
               fit: [mm(20), mm(12)], // ancho flexible, alto máximo 12mm
               align: "center",
@@ -1052,6 +1052,24 @@ exports.generarLicenciaPDF = async (req, res) => {
     // =====================================================
     // ESPACIO PARA RESPONSABLE
     // =====================================================
+
+
+    // Nueva imagen (ejemplo: logotipo institucional)
+    const mtX = mm(32);
+    const mtY = mm(24);
+    const mtW = mm(18);
+    const mtH = mm(18);
+
+    doc.image(
+      path.join(__dirname, "../utils/mt.png"),
+      mtX,
+      mtY,
+      {
+        fit: [mtW, mtH],
+        align: "center",
+        valign: "center"
+      }
+    );
 
     dibujarTexto(
       doc,
@@ -1099,7 +1117,7 @@ exports.generarLicenciaPDF = async (req, res) => {
       doc,
       "ESTA LICENCIA DEBERÁ CANJEARSE ANTES DEL VENCIMIENTO Y A MÁS TARDAR",
       mm(5),
-      mm(49),
+      mm(49.5),
       {
         font: "Helvetica-Bold",
         size: 4.3,
@@ -1113,7 +1131,7 @@ exports.generarLicenciaPDF = async (req, res) => {
       doc,
       "28 DÍAS POSTERIORES AL MISMO PARA CONSERVAR SU ANTIGUEDAD",
       mm(9),
-      mm(50.3),
+      mm(51),
       {
         font: "Helvetica-Bold",
         size: 4.3,
